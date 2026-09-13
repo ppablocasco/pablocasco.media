@@ -67,6 +67,7 @@
     padding:112px 40px 0;
     min-height:100vh;
   }
+  @media (max-width:380px){ .hero-inner{ padding-left:22px; padding-right:22px; } }
 
   /* ---------- Sticky top bar ---------- */
   .topbar{
@@ -144,6 +145,7 @@
     font-size:clamp(40px, 6.6vw, 118px); line-height:1.02; color:var(--white); margin:0;
   }
   h1.headline .line1{ display:block; white-space:nowrap; }
+  @media (max-width:340px){ h1.headline .line1{ white-space:normal; } }
   h1.headline em{
     font-style:normal; font-weight:800;
     background:linear-gradient(100deg, #7dffe0, #00e9c9);
@@ -768,7 +770,7 @@
 
     <div class="hero-copy">
       <h1 class="headline" data-i18n="hero.headline"><span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.</h1>
-      <p class="lead" data-i18n="hero.lead">Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.</p>
+      <p class="lead" data-i18n="hero.lead">En un mar de datos, no necesitás más métricas;<br>necesitás filtrar el ruido y mirar lo correcto que te hace avanzar.</p>
       <a class="cta" href="#casos" data-i18n="hero.cta">Conocé mi trabajo <span>&rarr;</span></a>
     </div>
   </div>
@@ -793,12 +795,6 @@
       <div class="lbl">ROAS</div>
       <div class="val" data-i18n="stage.roasValue">4,2x</div>
       <div class="delta" data-i18n="stage.roasDelta">+0,6x &#8599;</div>
-    </div>
-    <div class="plat-list">
-      <div class="on"><span class="bar"></span>META ADS</div>
-      <div><span class="bar"></span>GOOGLE ADS</div>
-      <div><span class="bar"></span>LINKEDIN ADS</div>
-      <div><span class="bar"></span>X ADS</div>
     </div>
     <div class="annot a" id="annot-a" data-i18n="annot.a">AUDIENCIA<b>CORRECTA</b></div>
     <div class="annot b" id="annot-b" data-i18n="annot.b">CREATIVIDAD<b>QUE CONECTA</b></div>
@@ -1104,10 +1100,6 @@
 <section class="contacto" id="contacto">
   <canvas id="contacto-canvas"></canvas>
 
-  <div class="contacto-annot" data-i18n="contacto.annot">
-    ESTRATEGIA<br>CREATIVIDAD<br>RESULTADOS REALES
-  </div>
-
   <div class="contacto-inner">
     <span class="section-tag" data-i18n="contacto.tag"><span class="dot"></span>CONTACTO<span class="tag-rule"></span></span>
 
@@ -1204,6 +1196,7 @@ window.NICHOS_DATA = [
   var hero = document.querySelector('.hero');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var W,H,DPR,t0=performance.now();
+  var lastDraw = 0, MIN_FRAME_MS = 23; // caps hero canvas redraws at ~43fps to cut CPU/GPU cost; timing math below is elapsed-time based, not frame-count based, so this never affects the loop's visual speed
 
   // ---- perfect-loop time base --------------------------------------------
   // Everything time-dependent is driven off `time`, which is wrapped to
@@ -1217,7 +1210,7 @@ window.NICHOS_DATA = [
   function wf(k){ return k*TAU/LOOP; }
 
   function resize(){
-    DPR = Math.min(window.devicePixelRatio||1, 2);
+    DPR = Math.min(window.devicePixelRatio||1, 1.5);
     W = hero.clientWidth; H = hero.clientHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
@@ -1287,14 +1280,14 @@ window.NICHOS_DATA = [
     // rather than a technical wireframe. backStrands sit wider + dimmer +
     // blurred, which is what makes a second band visibly cross under the
     // main one where the curve bends.
-    mainStrands = []; for(var i=0;i<105;i++) mainStrands.push(makeStrand(1));
-    backStrands = []; for(var j=0;j<30;j++) backStrands.push(makeStrand(1.5));
+    mainStrands = []; for(var i=0;i<68;i++) mainStrands.push(makeStrand(1));
+    backStrands = []; for(var j=0;j<18;j++) backStrands.push(makeStrand(1.5));
 
     // motes: tiny points of light that visibly travel along the wave,
     // left -> right, each doing an exact integer number of full sweeps
     // per LOOP so their trail position matches perfectly at the seam.
     motes = [];
-    var mn = Math.round((W*H)/2600);
+    var mn = Math.round((W*H)/4200);
     for(var m=0;m<mn;m++){
       motes.push({
         x0: Math.random()*W,
@@ -1310,7 +1303,7 @@ window.NICHOS_DATA = [
     // body with a larger, slower perpendicular excursion + its own gentle
     // horizontal creep, reading as depth (things floating in front/behind).
     detached = [];
-    var dn = Math.round((W*H)/8500);
+    var dn = Math.round((W*H)/13000);
     for(var d=0;d<dn;d++){
       detached.push({
         x0:Math.random()*W,
@@ -1328,7 +1321,7 @@ window.NICHOS_DATA = [
     // WHOLE canvas (not tied to the wave curve at all) — the reference has
     // fine bright specks well outside the ribbon body, like a night sky.
     stars = [];
-    var sn = Math.round((W*H)/8000);
+    var sn = Math.round((W*H)/12000);
     for(var st=0; st<sn; st++){
       stars.push({
         x: Math.random()*W,
@@ -1355,6 +1348,11 @@ window.NICHOS_DATA = [
   }
 
   function frame(now){
+    if(now - lastDraw < MIN_FRAME_MS){
+      if(!reduce && inView) requestAnimationFrame(frame); else running = false;
+      return;
+    }
+    lastDraw = now;
     var traw = (now-t0)/1000;
     var time = traw % LOOP;
     ctx.clearRect(0,0,W,H);
@@ -1500,8 +1498,7 @@ window.NICHOS_DATA = [
       var ad = (0.10+0.32*envd)*faded*twd*breathe*(q.front?1.3:0.7);
       ctx.beginPath(); ctx.arc(dx2,dy,q.r*(q.front?1.15:0.85),0,TAU);
       ctx.fillStyle='rgba(190,255,242,'+Math.min(0.85,ad).toFixed(3)+')';
-      if(q.front){ ctx.shadowBlur=5; ctx.shadowColor='rgba(120,255,235,.8)'; ctx.fill(); ctx.shadowBlur=0; }
-      else { ctx.fill(); }
+      ctx.fill();
     }
 
     // leader lines to the fixed annotation callouts (static UI, no animation)
@@ -2110,7 +2107,7 @@ window.I18N = {
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>',
     'hud.note': '<span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.',
     'hero.headline': '<span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.',
-    'hero.lead': 'Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.',
+    'hero.lead': 'En un mar de datos, no necesitás más métricas;<br>necesitás filtrar el ruido y mirar lo correcto que te hace avanzar.',
     'hero.cta': 'Conocé mi trabajo <span>&rarr;</span>',
     'stage.ctrValue': '2,34%',
     'stage.delta': '+1,12% &#8599;',
@@ -2189,7 +2186,7 @@ window.I18N = {
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>STRATEGY</span><span class="arrow">&rarr;</span><span>CREATIVE</span><span class="arrow">&rarr;</span><span>RESULTS</span>',
     'hud.note': '<span class="rule"></span>CONNECTING DATA, AUDIENCES<br>AND CREATIVITY.',
     'hero.headline': '<span class="line1">Less <span class="glitch" data-text="noise">noise</span>.</span>More <em>results</em> for your brand.',
-    'hero.lead': 'Strategy, data and creativity for<br>your brand to grow in the digital world.',
+    'hero.lead': 'In a sea of data, you don&rsquo;t need more metrics;<br>you need to filter the noise and focus on what moves you forward.',
     'hero.cta': 'See my work <span>&rarr;</span>',
     'stage.ctrValue': '2.34%',
     'stage.delta': '+1.12% &#8599;',
