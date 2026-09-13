@@ -1,0 +1,2381 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>pablocasco.ads — hero</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap');
+
+  :root{
+    --bg:#030307;
+    --cyan:#00f6df;
+    --cyan-soft:rgba(0,246,223,.16);
+    --white:#f4f6f7;
+    --gray:#8a97a0;
+    --dim:#57626b;
+    --border:rgba(255,255,255,.16);
+    --font-sans:'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+    --font-script:'Instrument Serif', serif;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; scroll-padding-top:var(--topbar-h, 110px); }
+  html,body{margin:0; padding:0; background:var(--bg); overflow-x:hidden;}
+  body{ font-family:var(--font-sans); color:var(--white); -webkit-font-smoothing:antialiased; }
+
+  /* ---------- Custom cursor + spotlight (todas las secciones, todas
+     oscuras) — mismo patrón que thomaslehmann.media: un punto propio en
+     vez de la flechita del sistema, con un halo suave que ilumina el
+     fondo alrededor a medida que te movés. Solo en dispositivos con mouse
+     real (pointer:fine) y sin prefers-reduced-motion; el JS que activa
+     la clase .has-custom-cursor decide eso, así en touch/reduced-motion
+     el cursor del sistema queda intacto. ---------- */
+  body.has-custom-cursor, body.has-custom-cursor *{ cursor:none !important; }
+  #cursorDot{
+    position:fixed; left:0; top:0; width:10px; height:10px; border-radius:50%;
+    background:#eafffb; pointer-events:none; z-index:10000;
+    box-shadow:0 0 10px 2px rgba(0,246,223,.85), 0 0 26px 7px rgba(0,246,223,.3);
+    transform:translate3d(-9999px,-9999px,0) translate(-50%,-50%);
+    opacity:0; transition:opacity .25s ease, width .18s ease, height .18s ease;
+  }
+  #cursorDot.is-active{ opacity:1; }
+  #cursorDot.is-hover{ width:26px; height:26px; background:rgba(234,255,251,.35); box-shadow:0 0 16px 4px rgba(0,246,223,.6); }
+  #cursorGlow{
+    position:fixed; left:0; top:0; width:460px; height:460px; border-radius:50%;
+    pointer-events:none; z-index:9999; mix-blend-mode:screen;
+    background:radial-gradient(circle, rgba(0,246,223,.12) 0%, rgba(0,246,223,.05) 38%, transparent 72%);
+    transform:translate3d(-9999px,-9999px,0) translate(-50%,-50%);
+    opacity:0; transition:opacity .35s ease;
+  }
+  #cursorGlow.is-active{ opacity:1; }
+
+  .hero{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    background:#030307;
+    overflow:hidden;
+  }
+  #hero-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; }
+  .hero-vignette{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 55% at 8% 45%, rgba(3,3,7,.7) 0%, transparent 60%),
+      linear-gradient(180deg, rgba(3,3,7,.35) 0%, transparent 12%, transparent 88%, rgba(3,3,7,.5) 100%);
+  }
+
+  .hero-inner{
+    position:relative; z-index:2;
+    max-width:1864px; margin:0 auto;
+    padding:112px 40px 0;
+    min-height:100vh;
+  }
+
+  /* ---------- Sticky top bar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:500;
+    background:rgba(3,3,7,.72); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .hheader{
+    max-width:1864px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 40px; gap:20px; flex-wrap:wrap;
+  }
+  .hbrand{ display:flex; align-items:center; gap:14px; }
+  .hmark{
+    width:56px; height:56px; border-radius:16px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg, #0a1614, #050a0a);
+    border:1.5px solid rgba(0,246,223,.55);
+    box-shadow:0 0 0 1px rgba(0,246,223,.12), 0 0 20px rgba(0,246,223,.25), inset 0 0 12px rgba(0,246,223,.08);
+    font-family:var(--font-sans); font-weight:800; font-size:19px; color:#eafffb;
+  }
+  .hname{ display:flex; flex-direction:column; line-height:1.35; }
+  .hname b{ font-size:21px; font-weight:700; letter-spacing:-.01em; color:var(--white); }
+  .hname span{ font-family:var(--font-mono); font-size:12px; color:var(--gray); letter-spacing:.09em; }
+
+  .lang-toggle{
+    display:inline-flex; align-items:center; gap:2px;
+    border:1px solid var(--border); border-radius:999px; padding:5px; background:rgba(255,255,255,.02);
+  }
+  .lang-opt{
+    all:unset; cursor:pointer; box-sizing:border-box;
+    display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px;
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.09em; color:var(--dim);
+    transition:color .25s ease;
+  }
+  .lang-opt .dot{ opacity:0; transition:opacity .25s ease; }
+  .lang-opt.active{ color:var(--white); }
+  .lang-opt.active .dot{ opacity:1; }
+  .lang-sep{ width:1px; height:14px; background:var(--border); flex-shrink:0; }
+
+  .havail{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:var(--font-sans); font-size:14.5px; color:var(--white);
+    border:1px solid var(--border); border-radius:999px; padding:12px 22px 12px 18px;
+    white-space:nowrap; text-decoration:none; transition:border-color .25s ease, background .25s ease;
+  }
+  a.havail:hover{ border-color:rgba(0,246,223,.55); background:rgba(0,246,223,.06); }
+
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); flex-shrink:0; display:inline-block; }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(0,246,223,.55), 0 0 8px var(--cyan);} 50%{ box-shadow:0 0 0 5px rgba(0,246,223,0), 0 0 12px var(--cyan);} }
+  .dot.live{ animation:pulse 2.4s ease-in-out infinite; }
+
+  /* ---------- HUD row ---------- */
+  .hud-row{
+    display:flex; align-items:flex-start; gap:26px; flex-wrap:wrap;
+    margin-top:36px;
+  }
+  .hud-pill{
+    display:inline-flex; align-items:center; gap:11px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:14px; color:#d7dee2; letter-spacing:.02em;
+    border:1px solid var(--border); border-radius:999px; padding:15px 26px;
+  }
+  .hud-pill .arrow{ color:var(--dim); margin:0 2px; }
+  .hud-note{
+    display:flex; align-items:flex-start; gap:12px; padding-top:16px;
+    font-family:var(--font-mono); font-size:13.5px; color:var(--gray); letter-spacing:.02em; line-height:1.55;
+  }
+  .hud-note .rule{ width:24px; height:1px; background:var(--dim); margin-top:9px; flex-shrink:0; }
+
+  /* ---------- Headline / lead / CTA ---------- */
+  .hero-copy{ position:relative; margin-top:44px; max-width:1460px; }
+  h1.headline{
+    position:relative; z-index:1;
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(40px, 6.6vw, 118px); line-height:1.02; color:var(--white); margin:0;
+  }
+  h1.headline .line1{ display:block; white-space:nowrap; }
+  h1.headline em{
+    font-style:normal; font-weight:800;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 18px rgba(0,246,223,.45));
+  }
+
+  /* ---------- "ruido" interference / static effect ---------- */
+  /* Constant loop (per Pablo, 2026-09-13): a chromatic-aberration slice
+     split (cyan / magenta channel offset) recurring continuously through
+     the cycle, plus a small position/opacity flicker on the base glyphs.
+     Reads as a signal that's always faintly glitching rather than a rare
+     burst — the previous 6s-burst version was reported as unnoticeable. */
+  .glitch{
+    position:relative; display:inline-block; color:var(--white);
+    animation: glitchFlicker 2.6s infinite;
+  }
+  .glitch::before, .glitch::after{
+    content: attr(data-text);
+    position:absolute; inset:0; pointer-events:none;
+    mix-blend-mode: screen;
+  }
+  .glitch::before{
+    color:#00f6df;
+    clip-path: inset(0 0 58% 0);
+    opacity:0;
+    animation: glitchTop 2.6s infinite;
+  }
+  .glitch::after{
+    color:#ff3d8f;
+    clip-path: inset(58% 0 0 0);
+    opacity:0;
+    animation: glitchBottom 2.6s infinite;
+  }
+  @keyframes glitchFlicker{
+    0%,100%{ opacity:1; transform:translate(0,0); }
+    3%{ opacity:.9; transform:translate(-1px,0); }
+    6%{ opacity:1; transform:translate(0,0); }
+    19%{ opacity:.88; transform:translate(1px,0); }
+    22%{ opacity:1; transform:translate(0,0); }
+    38%{ opacity:.92; transform:translate(0,-1px); }
+    41%{ opacity:1; transform:translate(0,0); }
+    54%{ opacity:.85; transform:translate(1px,0); }
+    57%{ opacity:1; transform:translate(0,0); }
+    72%{ opacity:.9; transform:translate(-1px,0); }
+    75%{ opacity:1; transform:translate(0,0); }
+    89%{ opacity:.88; transform:translate(1px,0); }
+    92%{ opacity:1; transform:translate(0,0); }
+  }
+  @keyframes glitchTop{
+    0%,100%{ opacity:.05; transform:translate(0,0); }
+    2%{ opacity:.65; transform:translate(-3px,0); }
+    5%{ opacity:.1; transform:translate(0,0); }
+    18%{ opacity:.55; transform:translate(3px,0); }
+    21%{ opacity:.1; transform:translate(0,0); }
+    37%{ opacity:.7; transform:translate(-2px,0); }
+    40%{ opacity:.12; transform:translate(0,0); }
+    53%{ opacity:.5; transform:translate(3px,0); }
+    56%{ opacity:.1; transform:translate(0,0); }
+    71%{ opacity:.6; transform:translate(-3px,0); }
+    74%{ opacity:.12; transform:translate(0,0); }
+    88%{ opacity:.55; transform:translate(2px,0); }
+    91%{ opacity:.08; transform:translate(0,0); }
+  }
+  @keyframes glitchBottom{
+    0%,100%{ opacity:.04; transform:translate(0,0); }
+    9%{ opacity:.55; transform:translate(3px,0); }
+    12%{ opacity:.08; transform:translate(0,0); }
+    26%{ opacity:.5; transform:translate(-3px,0); }
+    29%{ opacity:.1; transform:translate(0,0); }
+    45%{ opacity:.6; transform:translate(2px,0); }
+    48%{ opacity:.1; transform:translate(0,0); }
+    62%{ opacity:.45; transform:translate(-2px,0); }
+    65%{ opacity:.1; transform:translate(0,0); }
+    80%{ opacity:.55; transform:translate(3px,0); }
+    83%{ opacity:.1; transform:translate(0,0); }
+    96%{ opacity:.4; transform:translate(-2px,0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .glitch, .glitch::before, .glitch::after{ animation:none; opacity:0; }
+    .glitch::before, .glitch::after{ display:none; }
+  }
+  p.lead{
+    margin:34px 0 0; max-width:520px;
+    font-family:var(--font-mono); font-size:16px; line-height:1.65; letter-spacing:.02em;
+    color:#c3cdd1; text-transform:uppercase;
+  }
+  .cta{
+    display:inline-flex; align-items:center; gap:14px; margin-top:44px;
+    font-family:var(--font-mono); font-size:14.5px; letter-spacing:.03em; color:var(--cyan);
+    border:1.3px solid rgba(0,246,223,.65); border-radius:999px; padding:17px 28px;
+    text-decoration:none; text-transform:uppercase;
+  }
+  .cta span{ font-size:16px; }
+
+  /* ---------- Right-side HUD widgets, absolutely placed to match reference ---------- */
+  .stage{ position:absolute; inset:0; z-index:3; pointer-events:none; }
+  .metric-card{
+    position:absolute; left:0; top:0; width:8.4%; min-width:150px;
+    background:rgba(4,10,12,.55); border:1px solid rgba(0,246,223,.28); border-radius:10px;
+    padding:10px 14px 11px; backdrop-filter:blur(6px);
+    will-change:transform,opacity;
+  }
+  .metric-card .lbl{ font-family:var(--font-mono); font-size:10.5px; color:var(--gray); letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; }
+  .metric-card .val{ font-family:var(--font-mono); font-weight:600; font-size:21px; color:var(--white); margin-top:3px; }
+  .metric-card .delta{ font-family:var(--font-mono); font-size:11px; color:var(--cyan); margin-top:3px; white-space:nowrap; }
+
+  .plat-list{
+    position:absolute; left:90.5%; top:17.6%;
+    font-family:var(--font-mono); font-size:13px; letter-spacing:.05em;
+    display:flex; flex-direction:column; gap:11px;
+  }
+  .plat-list div{ display:flex; align-items:center; gap:9px; color:var(--dim); white-space:nowrap; }
+  .plat-list div.on{ color:var(--cyan); }
+  .plat-list div .bar{ width:2px; height:13px; background:currentColor; opacity:.8; }
+
+  .annot{
+    position:absolute; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    line-height:1.5; color:var(--dim);
+  }
+  .annot b{ display:block; color:#c7cfd3; font-weight:500; }
+  .annot.a{ left:54.6%; top:29%; }
+  .annot.b{ left:87.6%; top:35.5%; }
+  .annot.c{ left:58.9%; top:82%; }
+
+  .coords{
+    position:absolute; left:84.2%; top:86.5%;
+    display:flex; align-items:center; gap:9px;
+    font-family:var(--font-mono); font-size:13px; color:var(--dim); letter-spacing:.03em;
+  }
+
+  /* Toda esta capa (tarjetas viajeras, lista de plataformas, anotaciones,
+     coordenadas) está posicionada en % pensada para la proporción del hero
+     en desktop. Por debajo de este ancho el texto del hero ocupa mucha más
+     altura relativa y esta capa termina superpuesta al headline/HUD, así que
+     se oculta por completo (mismo criterio ya usado en Contacto con
+     .contacto-annot) y el hero mobile queda solo con el fondo animado + texto. */
+  @media (max-width:600px){ .stage{ display:none; } }
+
+  @media (prefers-reduced-motion: reduce){ .dot.live{ animation:none; } }
+
+  /* ================= Nichos section ================= */
+  /* No overflow:hidden here on purpose: the page-level html,body{overflow-x:hidden}
+     already contains the wide scrolling track (see below), and clipping at the
+     section box was cutting off the hover scale/glow on niches near the edges. */
+  .nichos{ position:relative; background:var(--bg); padding:104px 0 96px; }
+  .nichos-head{ max-width:1864px; margin:0 auto; padding:0 40px; position:relative; z-index:2; }
+  .section-tag{
+    display:inline-flex; align-items:center; gap:12px;
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:.14em; color:var(--gray);
+    text-transform:uppercase; margin-bottom:26px;
+  }
+  .section-tag .dot{ background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+  .section-tag .tag-rule{ width:34px; height:1px; background:var(--dim); display:inline-block; }
+  h2.nichos-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(34px, 4.6vw, 64px); line-height:1.04; color:var(--white); margin:0 0 22px;
+  }
+  h2.nichos-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,246,223,.35));
+  }
+  p.nichos-sub{
+    font-family:var(--font-mono); font-size:14px; line-height:1.7; letter-spacing:.03em;
+    color:#a9b2b8; text-transform:uppercase; margin:0; max-width:640px;
+  }
+
+  .nichos-stage{
+    position:relative; margin-top:64px; height:360px;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+            mask-image:linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  }
+  #nichos-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .nichos-track{
+    /* top offset (not 0): the stage has a mask-image, which clips anything
+       painted outside the stage's own box — a ring sitting flush with the
+       top edge gets its hover glow (scale 1.32 + ~34px shadow blur) cut off
+       in a hard line right above it. This offset gives the glow room to
+       clear the top edge before it ever gets there. */
+    position:absolute; top:80px; left:0; height:120px;
+    display:flex; align-items:flex-start; will-change:transform;
+  }
+  .nicho{
+    position:relative; flex:0 0 auto; width:230px;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    cursor:pointer;
+  }
+  .nicho-ring{
+    width:64px; height:64px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    border:1.4px solid var(--border); background:rgba(255,255,255,.02);
+    transition:transform .38s cubic-bezier(.2,.8,.2,1), border-color .38s ease, background .38s ease, box-shadow .38s ease;
+  }
+  .nicho-ring svg{ width:26px; height:26px; stroke:var(--gray); fill:none; stroke-width:1.6; transition:stroke .38s ease; }
+  .nicho-label{
+    margin-top:13px; font-family:var(--font-mono); font-size:13px; letter-spacing:.03em;
+    color:var(--gray); white-space:nowrap; transition:color .38s ease, transform .38s ease;
+  }
+  .nicho.active .nicho-ring{
+    transform:scale(1.32);
+    border-color:rgba(0,246,223,.9);
+    background:rgba(0,246,223,.08);
+    box-shadow:0 0 0 1px rgba(0,246,223,.25), 0 0 34px rgba(0,246,223,.55), inset 0 0 16px rgba(0,246,223,.15);
+  }
+  .nicho.active .nicho-ring svg{ stroke:#eafffb; }
+  .nicho.active .nicho-label{ color:var(--cyan); transform:translateY(1px) scale(1.05); font-weight:600; }
+
+  @media (prefers-reduced-motion: reduce){
+    .nichos-track{ animation:none !important; }
+  }
+
+  /* ================= Casos section ================= */
+  :root{ --violet:#c07dff; --violet-soft:rgba(192,125,255,.16); }
+  .casos{ position:relative; background:var(--bg); padding:112px 0 128px; }
+  .casos-head{ max-width:1864px; margin:0 auto; padding:0 40px; position:relative; z-index:2; }
+  h2.casos-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(34px, 4.6vw, 64px); line-height:1.04; color:var(--white); margin:0 0 22px;
+  }
+  h2.casos-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,246,223,.35));
+  }
+  p.casos-sub{
+    font-family:var(--font-mono); font-size:14px; line-height:1.7; letter-spacing:.03em;
+    color:#a9b2b8; text-transform:uppercase; margin:0; max-width:640px;
+  }
+
+  .casos-grid{
+    max-width:1864px; margin:64px auto 0; padding:0 40px;
+    display:grid; grid-template-columns:1fr 1fr; gap:24px;
+  }
+  @media (max-width:960px){ .casos-grid{ grid-template-columns:1fr; } }
+
+  .casos-fail{ max-width:1864px; margin:96px auto 0; padding:0 40px; }
+  h3.casos-fail-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(28px, 3.6vw, 46px); line-height:1.1; color:var(--white); margin:0 0 18px;
+  }
+  h3.casos-fail-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    color:#ff3d8f; filter:drop-shadow(0 0 14px rgba(255,61,143,.35));
+  }
+  p.casos-fail-sub{
+    font-family:var(--font-mono); font-size:14px; line-height:1.7; letter-spacing:.03em;
+    color:#a9b2b8; text-transform:uppercase; margin:0 0 32px; max-width:640px;
+  }
+
+  .case-card{
+    position:relative; border:1px solid var(--border); border-radius:18px;
+    background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+    overflow:hidden;
+    transition:border-color .3s ease, box-shadow .3s ease;
+  }
+  .case-card.open{ border-color:rgba(0,246,223,.35); box-shadow:0 0 0 1px rgba(0,246,223,.12), 0 0 40px rgba(0,246,223,.08); }
+
+  .case-header{
+    width:100%; display:flex; align-items:center; gap:16px;
+    padding:26px 28px; background:none; border:none; cursor:pointer;
+    font-family:inherit; text-align:left; color:inherit;
+  }
+  .case-index{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.1em; color:var(--dim);
+    text-transform:uppercase; display:block; margin-bottom:8px;
+  }
+  .case-header-left{ flex:1; min-width:0; }
+  .case-title{
+    font-family:var(--font-sans); font-weight:800; font-size:26px; letter-spacing:-.01em;
+    color:var(--white); margin:0;
+  }
+  .case-badge{
+    flex-shrink:0; display:inline-flex; align-items:center; gap:8px;
+    padding:6px 14px; border-radius:999px; font-family:var(--font-mono); font-size:11.5px;
+    letter-spacing:.1em; text-transform:uppercase;
+    border:1.4px solid rgba(0,246,223,.45); background:rgba(0,246,223,.06); color:#bdfff5;
+    box-shadow:0 0 0 1px rgba(0,246,223,.08);
+  }
+  .case-badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); flex-shrink:0; }
+  .case-badge.branding{
+    border-color:rgba(192,125,255,.55); background:rgba(192,125,255,.1); color:#f0e0ff;
+    box-shadow:0 0 0 1px rgba(192,125,255,.1), 0 0 20px rgba(192,125,255,.25);
+  }
+  .case-badge.branding .dot{ background:var(--violet); box-shadow:0 0 9px var(--violet); }
+  .case-badge.fail{
+    border-color:rgba(255,61,143,.55); background:rgba(255,61,143,.1); color:#ffd6e8;
+    box-shadow:0 0 0 1px rgba(255,61,143,.1), 0 0 20px rgba(255,61,143,.22);
+  }
+  .case-badge.fail .dot{ background:#ff3d8f; box-shadow:0 0 9px #ff3d8f; }
+
+  .case-chevron{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; border:1.4px solid var(--border);
+    display:flex; align-items:center; justify-content:center; color:var(--gray);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s ease, color .3s ease;
+  }
+  .case-card.open .case-chevron{ transform:rotate(180deg); border-color:rgba(0,246,223,.5); color:var(--cyan); }
+
+  @media (max-width:480px){
+    .case-header{ flex-wrap:wrap; row-gap:14px; }
+    .case-header-left{ flex:1 1 100%; order:1; }
+    .case-badge{ order:2; }
+    .case-chevron{ order:3; margin-left:auto; }
+  }
+
+  .case-body-wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1); }
+  .case-body-inner{ overflow:hidden; }
+  .case-card.open .case-body-wrap{ grid-template-rows:1fr; }
+
+  .case-body{ padding:0 28px 30px; }
+  .case-desc{
+    font-family:var(--font-sans); font-size:15px; line-height:1.65; color:#c7cfd3;
+    margin:0 0 20px; max-width:640px;
+  }
+  .case-tags{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .case-tags span{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.05em; text-transform:uppercase;
+    padding:6px 12px; border-radius:999px; border:1px solid var(--border); color:var(--gray);
+  }
+  .case-stats{ display:flex; gap:36px; flex-wrap:wrap; padding-top:20px; border-top:1px solid var(--border); margin-bottom:26px; }
+  .case-stats div strong{
+    display:block; font-family:var(--font-sans); font-weight:800; font-size:26px; color:var(--cyan);
+    letter-spacing:-.01em;
+  }
+  .case-stats div span{
+    display:block; margin-top:4px; font-family:var(--font-mono); font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--dim);
+  }
+
+  .case-shots{ display:flex; gap:16px; flex-wrap:wrap; }
+  .shot-thumb{
+    position:relative; flex:1 1 220px; max-width:320px; border-radius:10px; overflow:hidden;
+    border:1px solid var(--border); background:#0a0d10; cursor:zoom-in; padding:0;
+    transition:border-color .25s ease, transform .25s ease;
+  }
+  .shot-thumb:hover{ border-color:rgba(0,246,223,.5); transform:translateY(-2px); }
+  .shot-thumb img{ display:block; width:100%; height:auto; }
+  .shot-thumb-label{
+    position:absolute; left:10px; bottom:10px; font-family:var(--font-mono); font-size:10.5px;
+    letter-spacing:.08em; text-transform:uppercase; color:#eafffb;
+    background:rgba(3,3,7,.72); padding:4px 9px; border-radius:6px; border:1px solid rgba(0,246,223,.35);
+  }
+  .shot-thumb-zoom{
+    position:absolute; right:10px; top:10px; width:26px; height:26px; border-radius:50%;
+    background:rgba(3,3,7,.72); border:1px solid rgba(255,255,255,.25);
+    display:flex; align-items:center; justify-content:center; color:#eafffb; font-size:13px;
+  }
+
+  .lightbox{
+    position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+    padding:40px; background:rgba(2,2,5,.88); backdrop-filter:blur(6px);
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .lightbox.open{ opacity:1; pointer-events:auto; }
+  .lightbox img{
+    max-width:100%; max-height:100%; border-radius:12px; box-shadow:0 20px 80px rgba(0,0,0,.6);
+    border:1px solid rgba(255,255,255,.14);
+  }
+  .lightbox-close{
+    position:absolute; top:28px; right:32px; width:42px; height:42px; border-radius:50%;
+    border:1.4px solid rgba(255,255,255,.25); background:rgba(255,255,255,.04); color:#fff;
+    font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .case-chevron, .case-body-wrap, .shot-thumb, .lightbox{ transition:none !important; }
+  }
+
+  /* ================= Calculadora section ================= */
+  .calc{ position:relative; background:var(--bg); padding:112px 0 132px; }
+  .calc-head{ max-width:1864px; margin:0 auto; padding:0 40px; position:relative; z-index:2; }
+  h2.calc-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(34px, 4.6vw, 64px); line-height:1.04; color:var(--white); margin:0 0 22px;
+  }
+  h2.calc-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,246,223,.35));
+  }
+  p.calc-sub{
+    font-family:var(--font-mono); font-size:14px; line-height:1.7; letter-spacing:.03em;
+    color:#a9b2b8; text-transform:uppercase; margin:0; max-width:640px;
+  }
+
+  .calc-grid{
+    max-width:1864px; margin:56px auto 0; padding:0 40px;
+    display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:stretch;
+  }
+  @media (max-width:960px){ .calc-grid{ grid-template-columns:1fr; } }
+
+  .calc-panel{
+    border-radius:20px; border:1px solid var(--border); padding:32px 34px;
+    background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+  }
+  .calc-panel.result{
+    background:linear-gradient(135deg, rgba(0,246,223,.14), rgba(6,10,14,.6) 42%, rgba(140,70,220,.28));
+    border-color:rgba(140,110,220,.35);
+    box-shadow:0 0 0 1px rgba(0,246,223,.06), 0 30px 90px rgba(90,40,180,.16);
+  }
+  .calc-panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:34px; }
+  .calc-panel-label{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.12em; color:var(--gray); text-transform:uppercase;
+  }
+  .calc-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 14px; border-radius:999px; font-family:var(--font-mono); font-size:11px;
+    letter-spacing:.09em; text-transform:uppercase;
+    border:1.4px solid rgba(0,246,223,.45); background:rgba(0,246,223,.06); color:#bdfff5;
+  }
+  .calc-pill .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); flex-shrink:0; }
+
+  .calc-row{ margin-bottom:32px; }
+  .calc-row:last-of-type{ margin-bottom:26px; }
+  .calc-row-top{ display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:16px; }
+  .calc-row-label{ font-family:var(--font-sans); font-size:15.5px; color:#dfe4e6; line-height:1.35; max-width:280px; }
+  .calc-stepper{
+    display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:10px;
+    padding:9px 12px; background:rgba(255,255,255,.02); flex-shrink:0;
+  }
+  .calc-stepper input{
+    width:118px; border:none; background:none; color:var(--cyan); font-family:var(--font-mono);
+    font-size:16px; font-weight:600; text-align:left; outline:none;
+  }
+  .calc-stepper .arrows{ display:flex; flex-direction:column; gap:2px; }
+  .calc-stepper .arrows button{
+    all:unset; cursor:pointer; width:16px; height:12px; display:flex; align-items:center; justify-content:center;
+    color:var(--dim); font-size:9px; line-height:1;
+  }
+  .calc-stepper .arrows button:hover{ color:var(--cyan); }
+  .calc-row-caption{
+    margin-top:6px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em;
+    color:var(--dim); text-transform:uppercase; text-align:right;
+  }
+
+  .calc-slider{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px;
+    background:rgba(255,255,255,.1); outline:none; cursor:pointer;
+  }
+  .calc-slider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%;
+    background:#04110f; border:2.5px solid var(--cyan);
+    box-shadow:0 0 0 4px rgba(0,246,223,.15), 0 0 16px rgba(0,246,223,.6);
+    cursor:pointer; margin-top:0;
+  }
+  .calc-slider::-moz-range-thumb{
+    width:20px; height:20px; border-radius:50%; background:#04110f; border:2.5px solid var(--cyan);
+    box-shadow:0 0 0 4px rgba(0,246,223,.15), 0 0 16px rgba(0,246,223,.6); cursor:pointer;
+  }
+  .calc-slider::-moz-range-track{ height:4px; border-radius:4px; background:transparent; }
+
+  .calc-note{
+    display:flex; gap:14px; align-items:flex-start; padding-top:22px; border-top:1px solid var(--border);
+  }
+  .calc-note-icon{
+    flex-shrink:0; width:26px; height:26px; border-radius:50%; border:1.4px solid rgba(0,246,223,.4);
+    display:flex; align-items:center; justify-content:center; color:var(--cyan); font-size:12px;
+  }
+  .calc-note p{
+    margin:0; font-family:var(--font-mono); font-size:11.5px; line-height:1.7; letter-spacing:.03em;
+    color:var(--dim); text-transform:uppercase;
+  }
+
+  .calc-stats{
+    display:grid; grid-template-columns:1fr 1fr; border-top:1px solid rgba(255,255,255,.14); margin-top:6px;
+  }
+  .calc-stat{
+    padding:26px 22px 26px 0; border-bottom:1px solid rgba(255,255,255,.14);
+  }
+  .calc-stat:nth-child(odd){ border-right:1px solid rgba(255,255,255,.14); padding-right:24px; }
+  .calc-stat:nth-child(even){ padding-left:24px; }
+  .calc-stat:nth-last-child(-n+2){ border-bottom:none; }
+  .calc-stat-label{ font-family:var(--font-sans); font-size:14px; color:#dfe4e6; margin-bottom:12px; }
+  .calc-stat-value{
+    font-family:var(--font-sans); font-weight:800; font-size:clamp(26px, 2.6vw, 38px); letter-spacing:-.01em;
+    color:var(--cyan); line-height:1;
+  }
+  .calc-stat-sub{
+    margin-top:8px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em;
+    color:#9aa6ab; text-transform:uppercase;
+  }
+
+  /* ================= Contacto section ================= */
+  .contacto{ position:relative; background:var(--bg); padding:112px 0 96px; overflow:hidden; }
+  #contacto-canvas{
+    position:absolute; right:0; bottom:0; width:62%; height:70%; display:block; pointer-events:none;
+    /* A single diagonal linear-gradient only fades the two corners it
+       points at (top-left/bottom-right here); most of the length of the
+       LEFT and TOP edges of this box sat inside the fully-opaque middle
+       band, so any thread reaching them was hard-clipped by the canvas
+       edge instead of fading — that's the "waves get cut" Pablo flagged.
+       A radial fade reaches all four edges the same way, so nothing
+       touches an unmasked edge at full opacity. */
+    -webkit-mask-image: radial-gradient(ellipse 72% 72% at 62% 55%, #000 25%, transparent 90%);
+            mask-image: radial-gradient(ellipse 72% 72% at 62% 55%, #000 25%, transparent 90%);
+  }
+  .contacto-inner{ position:relative; z-index:2; max-width:1864px; margin:0 auto; padding:0 40px; }
+  .contacto-top{ display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
+  @media (max-width:960px){ .contacto-top{ grid-template-columns:1fr; gap:36px; } }
+
+  h2.contacto-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(32px, 4.2vw, 58px); line-height:1.08; color:var(--white); margin:0 0 22px;
+  }
+  h2.contacto-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,246,223,.35));
+  }
+  p.contacto-sub{
+    font-family:var(--font-mono); font-size:14px; line-height:1.7; letter-spacing:.03em;
+    color:#a9b2b8; text-transform:uppercase; margin:0; max-width:440px;
+  }
+
+  .contacto-copy{ font-family:var(--font-sans); font-size:15.5px; line-height:1.75; color:#c7cfd3; padding-top:6px; max-width:480px; }
+  .contacto-copy p{ margin:0 0 22px; position:relative; padding-left:24px; }
+  .contacto-copy p:first-child::before{
+    content:''; position:absolute; left:0; top:9px; width:6px; height:6px; border-radius:50%;
+    background:var(--cyan); box-shadow:0 0 8px var(--cyan);
+  }
+
+  .contacto-annot{
+    position:absolute; right:40px; top:120px; text-align:right; z-index:2;
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--dim); line-height:1.7;
+  }
+  @media (max-width:1200px){ .contacto-annot{ display:none; } }
+
+  .contacto-grid{
+    max-width:1864px; margin:60px auto 0; padding:0 40px;
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;
+  }
+  @media (max-width:900px){ .contacto-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .contacto-grid{ grid-template-columns:1fr; } }
+
+  .contact-card{
+    display:block; text-decoration:none; color:inherit;
+    border:1px solid var(--border); border-radius:16px; padding:26px 24px;
+    background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+    transition:border-color .3s ease, transform .3s ease, box-shadow .3s ease;
+  }
+  .contact-card:hover{
+    border-color:rgba(0,246,223,.5); transform:translateY(-3px);
+    box-shadow:0 0 0 1px rgba(0,246,223,.1), 0 20px 50px rgba(0,246,223,.1);
+  }
+  .contact-card-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .contact-card-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; color:var(--gray); text-transform:uppercase;
+  }
+  .contact-card-arrow{
+    width:28px; height:28px; border-radius:50%; border:1.4px solid var(--border);
+    display:flex; align-items:center; justify-content:center; color:var(--gray); font-size:13px;
+    transition:border-color .3s ease, color .3s ease, transform .3s ease;
+  }
+  .contact-card:hover .contact-card-arrow{ border-color:rgba(0,246,223,.6); color:var(--cyan); transform:translate(2px,-2px); }
+  .contact-card-icon{ width:38px; height:38px; color:var(--cyan); margin-bottom:18px; }
+  .contact-card-icon svg{ width:100%; height:100%; }
+  .contact-card-value{ font-family:var(--font-sans); font-weight:700; font-size:16.5px; color:var(--white); margin-bottom:6px; word-break:break-word; }
+  .contact-card-cta{ font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; color:var(--dim); text-transform:uppercase; }
+
+  .contacto-foot{
+    max-width:1864px; margin:56px auto 0; padding:0 40px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  }
+  .contacto-coords{
+    display:flex; align-items:center; gap:9px;
+    font-family:var(--font-mono); font-size:13px; color:var(--dim); letter-spacing:.03em;
+  }
+  .contacto-bye{
+    display:flex; align-items:center; gap:14px;
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim);
+  }
+  .contacto-bye .rule{ width:60px; height:1px; background:var(--dim); display:inline-block; }
+
+  @media (prefers-reduced-motion: reduce){ #contacto-canvas{ display:none; } }
+</style>
+
+
+<div id="cursorGlow" aria-hidden="true"></div>
+<div id="cursorDot" aria-hidden="true"></div>
+
+<header class="topbar" id="topbar">
+  <div class="hheader">
+    <div class="hbrand">
+      <div class="hmark">PC</div>
+      <div class="hname">
+        <b>Pablo Casco</b>
+        <span>PAID MEDIA &times; STRATEGY &times; CREATIVE</span>
+      </div>
+    </div>
+    <div class="lang-toggle" id="langToggle" role="group" aria-label="Idioma / Language">
+      <button type="button" class="lang-opt active" data-lang="es"><span class="dot"></span>ESP</button>
+      <span class="lang-sep"></span>
+      <button type="button" class="lang-opt" data-lang="en"><span class="dot"></span>ENG</button>
+    </div>
+    <a class="havail" href="https://wa.me/5491158146367" target="_blank" rel="noopener"><span class="dot live"></span> <span data-i18n="hero.available">Disponible</span></a>
+  </div>
+</header>
+
+
+<section class="hero" id="inicio">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-vignette"></div>
+
+  <svg viewBox="0 0 26 230" style="position:absolute; left:45.4%; top:23%; width:16px; height:150px; opacity:.09; filter:blur(.4px); z-index:1; pointer-events:none;">
+    <polygon points="9,0 17,0 17,14 9,14" fill="#fff"/>
+    <polygon points="6,14 20,14 22,210 4,210" fill="#fff"/>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="hud-row">
+      <div class="hud-pill" data-i18n="hud.pill">
+        <span class="dot"></span>
+        <span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>
+      </div>
+      <div class="hud-note" data-i18n="hud.note"><span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.</div>
+    </div>
+
+    <div class="hero-copy">
+      <h1 class="headline" data-i18n="hero.headline"><span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.</h1>
+      <p class="lead" data-i18n="hero.lead">Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.</p>
+      <a class="cta" href="#casos" data-i18n="hero.cta">Conocé mi trabajo <span>&rarr;</span></a>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="metric-card" id="metric-ctr">
+      <div class="lbl">CTR</div>
+      <div class="val" data-i18n="stage.ctrValue">2,34%</div>
+      <div class="delta" data-i18n="stage.delta">+1,12% &#8599;</div>
+    </div>
+    <div class="metric-card" id="metric-rpv">
+      <div class="lbl">RPV</div>
+      <div class="val" data-i18n="stage.rpvValue">$1,86</div>
+      <div class="delta" data-i18n="stage.rpvDelta">+0,34 &#8599;</div>
+    </div>
+    <div class="metric-card" id="metric-hook">
+      <div class="lbl">HOOK RATE</div>
+      <div class="val" data-i18n="stage.hookValue">41%</div>
+      <div class="delta" data-i18n="stage.hookDelta">+3,80% &#8599;</div>
+    </div>
+    <div class="metric-card" id="metric-roas">
+      <div class="lbl">ROAS</div>
+      <div class="val" data-i18n="stage.roasValue">4,2x</div>
+      <div class="delta" data-i18n="stage.roasDelta">+0,6x &#8599;</div>
+    </div>
+    <div class="plat-list">
+      <div class="on"><span class="bar"></span>META ADS</div>
+      <div><span class="bar"></span>GOOGLE ADS</div>
+      <div><span class="bar"></span>LINKEDIN ADS</div>
+      <div><span class="bar"></span>X ADS</div>
+    </div>
+    <div class="annot a" id="annot-a" data-i18n="annot.a">AUDIENCIA<b>CORRECTA</b></div>
+    <div class="annot b" id="annot-b" data-i18n="annot.b">CREATIVIDAD<b>QUE CONECTA</b></div>
+    <div class="annot c" id="annot-c" data-i18n="annot.c">CONVERSIONES<b>REALES</b></div>
+    <div class="coords"><span>&#8853;</span> -34.6037&deg;&nbsp;&nbsp;-58.3816&deg;</div>
+  </div>
+</section>
+
+<section class="nichos" id="nichos">
+  <div class="nichos-head">
+    <span class="section-tag" data-i18n="nichos.tag"><span class="dot"></span>NICHOS DE TRABAJO<span class="tag-rule"></span></span>
+    <h2 class="nichos-title" data-i18n="nichos.title">Diversos nichos,<br>un mismo <em>enfoque.</em></h2>
+    <p class="nichos-sub" data-i18n="nichos.sub">Estrategia, creatividad y datos en cada industria.<br>Resultados reales, en cada nicho.</p>
+  </div>
+
+  <div class="nichos-stage" id="nichosStage">
+    <canvas id="nichos-canvas"></canvas>
+    <div class="nichos-track" id="nichosTrack"></div>
+  </div>
+</section>
+
+<section class="casos" id="casos">
+  <div class="casos-head">
+    <span class="section-tag" data-i18n="casos.tag"><span class="dot"></span>CAMPAÑAS Y RESULTADOS<span class="tag-rule"></span></span>
+    <h2 class="casos-title" data-i18n="casos.title">Campañas y<br>resultados <em>reales.</em></h2>
+    <p class="casos-sub" data-i18n="casos.sub">Datos directo del administrador de anuncios.<br>Sin vanity metrics, sin maquillaje.</p>
+  </div>
+
+  <div class="casos-grid">
+
+    <div class="case-card" data-case="electrodomesticos">
+      <button class="case-header" aria-expanded="false">
+        <div class="case-header-left">
+          <span class="case-index" data-i18n="case1.index">Caso · 001</span>
+          <h3 class="case-title" data-i18n="case1.title">Electrodomésticos</h3>
+        </div>
+        <span class="case-badge"><span class="dot"></span>Performance</span>
+        <span class="case-chevron">&#8964;</span>
+      </button>
+      <div class="case-body-wrap">
+        <div class="case-body-inner">
+          <div class="case-body">
+            <p class="case-desc" data-i18n="case1.desc">Gestión conjunta de Meta Ads y Google Ads para una marca de electrodomésticos, sosteniendo el volumen de conversiones sin resignar eficiencia de costo por resultado.</p>
+            <div class="case-tags"><span>Meta Ads</span><span>Google Ads</span><span>E-commerce</span></div>
+            <div class="case-stats">
+              <div><strong data-i18n="case1.stat1val">22,35</strong><span data-i18n="case1.stat1label">ROAS promedio (Meta)</span></div>
+              <div><strong>224</strong><span data-i18n="case1.stat2label">Conversiones (Google, jul–ago)</span></div>
+            </div>
+            <div class="case-shots">
+              <button class="shot-thumb" data-full="images/case-electro-meta.png" aria-label="Ver captura de Meta Ads en alta calidad">
+                <img src="images/case-electro-meta.png" alt="Panel de Meta Ads del caso Electrodomésticos" loading="lazy">
+                <span class="shot-thumb-label">Meta Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+              <button class="shot-thumb" data-full="images/case-electro-google.png" aria-label="Ver captura de Google Ads en alta calidad">
+                <img src="images/case-electro-google.png" alt="Panel de Google Ads del caso Electrodomésticos" loading="lazy">
+                <span class="shot-thumb-label">Google Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card" data-case="alimentos">
+      <button class="case-header" aria-expanded="false">
+        <div class="case-header-left">
+          <span class="case-index" data-i18n="case2.index">Caso · 002</span>
+          <h3 class="case-title" data-i18n="case2.title">Alimentos</h3>
+        </div>
+        <span class="case-badge branding"><span class="dot"></span>Branding</span>
+        <span class="case-chevron">&#8964;</span>
+      </button>
+      <div class="case-body-wrap">
+        <div class="case-body-inner">
+          <div class="case-body">
+            <p class="case-desc" data-i18n="case2.desc">Campañas de Meta Ads orientadas a tráfico y reconocimiento para una marca de alimentos, priorizando la construcción de marca por sobre la conversión directa.</p>
+            <div class="case-tags"><span>Meta Ads</span><span>Branding</span><span data-i18n="case2.tag3">Alcance</span></div>
+            <div class="case-stats">
+              <div><strong>81</strong><span data-i18n="case2.stat1label">Campañas activas</span></div>
+              <div><strong>62</strong><span data-i18n="case2.stat2label">Acciones generadas</span></div>
+            </div>
+            <div class="case-shots">
+              <button class="shot-thumb" data-full="images/case-alimentos-meta.png" aria-label="Ver captura de Meta Ads en alta calidad">
+                <img src="images/case-alimentos-meta.png" alt="Panel de Meta Ads del caso Alimentos" loading="lazy">
+                <span class="shot-thumb-label">Meta Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card" data-case="ong">
+      <button class="case-header" aria-expanded="false">
+        <div class="case-header-left">
+          <span class="case-index" data-i18n="case3.index">Caso · 003</span>
+          <h3 class="case-title" data-i18n="case3.title">ONG</h3>
+        </div>
+        <span class="case-badge"><span class="dot"></span>Performance</span>
+        <span class="case-chevron">&#8964;</span>
+      </button>
+      <div class="case-body-wrap">
+        <div class="case-body-inner">
+          <div class="case-body">
+            <p class="case-desc" data-i18n="case3.desc">Gestión de Meta Ads para una ONG, con foco en captar donaciones a través de campañas de conversión en el sitio.</p>
+            <div class="case-tags"><span>Meta Ads</span><span>Fundraising</span><span data-i18n="case3.tag3">Conversión</span></div>
+            <div class="case-stats">
+              <div><strong>450</strong><span data-i18n="case3.stat1label">Donaciones (campaña top)</span></div>
+              <div><strong data-i18n="case3.stat2val">$3.859,78</strong><span data-i18n="case3.stat2label">Costo por donación</span></div>
+            </div>
+            <div class="case-shots">
+              <button class="shot-thumb" data-full="images/case-ong-meta.png" aria-label="Ver captura de Meta Ads en alta calidad">
+                <img src="images/case-ong-meta.png" alt="Panel de Meta Ads del caso ONG" loading="lazy">
+                <span class="shot-thumb-label">Meta Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-card" data-case="viajes">
+      <button class="case-header" aria-expanded="false">
+        <div class="case-header-left">
+          <span class="case-index" data-i18n="case4.index">Caso · 004</span>
+          <h3 class="case-title" data-i18n="case4.title">Agencia de viajes</h3>
+        </div>
+        <span class="case-badge"><span class="dot"></span>Performance</span>
+        <span class="case-chevron">&#8964;</span>
+      </button>
+      <div class="case-body-wrap">
+        <div class="case-body-inner">
+          <div class="case-body">
+            <p class="case-desc" data-i18n="case4.desc">Gestión de Google Ads para una agencia de viajes, generando conversiones calificadas dentro de un presupuesto acotado.</p>
+            <div class="case-tags"><span>Google Ads</span><span data-i18n="case4.tag2">Turismo</span><span data-i18n="case4.tag3">Conversión</span></div>
+            <div class="case-stats">
+              <div><strong>118</strong><span data-i18n="case4.stat1label">Conversiones</span></div>
+              <div><strong data-i18n="case4.stat2val">USD 17,24</strong><span data-i18n="case4.stat2label">Costo por conversión</span></div>
+            </div>
+            <div class="case-shots">
+              <button class="shot-thumb" data-full="images/case-viajes-google.png" aria-label="Ver captura de Google Ads en alta calidad">
+                <img src="images/case-viajes-google.png" alt="Panel de Google Ads del caso Agencia de viajes" loading="lazy">
+                <span class="shot-thumb-label">Google Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="casos-fail">
+    <h3 class="casos-fail-title" data-i18n="casosFail.title">También hay campañas<br>que <em>no funcionaron.</em></h3>
+    <p class="casos-fail-sub" data-i18n="casosFail.sub">Y también es parte del proceso.<br>Este es un caso real que no llegó al resultado que el negocio necesitaba.</p>
+
+    <div class="case-card" data-case="congelados">
+      <button class="case-header" aria-expanded="false">
+        <div class="case-header-left">
+          <span class="case-index" data-i18n="case5.index">Caso · 005</span>
+          <h3 class="case-title" data-i18n="case5.title">Congelados</h3>
+        </div>
+        <span class="case-badge fail"><span class="dot"></span><span data-i18n="case5.badge">No alcanzó el objetivo</span></span>
+        <span class="case-chevron">&#8964;</span>
+      </button>
+      <div class="case-body-wrap">
+        <div class="case-body-inner">
+          <div class="case-body">
+            <p class="case-desc" data-i18n="case5.desc">Campaña de Meta Ads para una marca de congelados. Llegamos a un ROAS de 3,11 y 30 compras, pero no alcanzó para cubrir el margen y la estacionalidad propia de ese rubro: no invertimos el tiempo necesario en entender el negocio al 100% antes de lanzar. Desde este caso, no lanzo ninguna campaña hasta completar un proceso de onboarding a fondo con cada cliente.</p>
+            <div class="case-tags"><span>Meta Ads</span><span data-i18n="case5.tag2">Congelados</span><span data-i18n="case5.tag3">Aprendizaje</span></div>
+            <div class="case-stats">
+              <div><strong data-i18n="case5.stat1val">$1.008.007,61</strong><span data-i18n="case5.stat1label">Inversión</span></div>
+              <div><strong data-i18n="case5.stat2val">30</strong><span data-i18n="case5.stat2label">Resultados</span></div>
+              <div><strong data-i18n="case5.stat3val">3,11</strong><span data-i18n="case5.stat3label">ROAS</span></div>
+              <div><strong data-i18n="case5.stat4val">30</strong><span data-i18n="case5.stat4label">Conversiones</span></div>
+            </div>
+            <div class="case-shots">
+              <button class="shot-thumb" data-full="images/case-congelados-meta.png" aria-label="Ver captura de Meta Ads en alta calidad">
+                <img src="images/case-congelados-meta.png" alt="Panel de Meta Ads del caso Congelados" loading="lazy">
+                <span class="shot-thumb-label">Meta Ads</span>
+                <span class="shot-thumb-zoom">&#8599;</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="calc" id="calculadora">
+  <div class="calc-head">
+    <span class="section-tag" data-i18n="calc.tag"><span class="dot"></span>CALCULADORA<span class="tag-rule"></span></span>
+    <h2 class="calc-title" data-i18n="calc.title">Planificá con<br><em>señal</em>, no intuición.</h2>
+    <p class="calc-sub" data-i18n="calc.sub">Ingresá tus objetivos principales y obtené una proyección<br>en base a los valores que cargues.</p>
+  </div>
+
+  <div class="calc-grid">
+
+    <div class="calc-panel">
+      <div class="calc-panel-head">
+        <span class="calc-panel-label" data-i18n="calc.objectives">Tus objetivos</span>
+        <span class="calc-pill" data-i18n="calc.configure"><span class="dot"></span>Configurá</span>
+      </div>
+
+      <div class="calc-row">
+        <div class="calc-row-top">
+          <span class="calc-row-label" data-i18n="calc.facturacionLabel">Facturación deseada</span>
+          <div class="calc-stepper">
+            <span id="calcCurF">USD</span>
+            <input type="text" id="calcFacturacionNum" inputmode="numeric">
+            <div class="arrows">
+              <button type="button" data-target="facturacion" data-dir="1" aria-label="Aumentar">&#9650;</button>
+              <button type="button" data-target="facturacion" data-dir="-1" aria-label="Disminuir">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <input type="range" class="calc-slider" id="calcFacturacion" min="500" max="100000" step="500" value="10000">
+        <div class="calc-row-caption" data-i18n="calc.perMonth">Por mes</div>
+      </div>
+
+      <div class="calc-row">
+        <div class="calc-row-top">
+          <span class="calc-row-label" data-i18n="calc.ticketLabel">Ticket promedio</span>
+          <div class="calc-stepper">
+            <span id="calcCurT">USD</span>
+            <input type="text" id="calcTicketNum" inputmode="numeric">
+            <div class="arrows">
+              <button type="button" data-target="ticket" data-dir="1" aria-label="Aumentar">&#9650;</button>
+              <button type="button" data-target="ticket" data-dir="-1" aria-label="Disminuir">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <input type="range" class="calc-slider" id="calcTicket" min="5" max="2000" step="5" value="120">
+        <div class="calc-row-caption" data-i18n="calc.perSale">Por venta</div>
+      </div>
+
+      <div class="calc-row">
+        <div class="calc-row-top">
+          <span class="calc-row-label" data-i18n="calc.pctLabel">% dispuesto a invertir<br>para conseguir un cliente nuevo</span>
+          <div class="calc-stepper">
+            <input type="text" id="calcPctNum" inputmode="numeric" style="width:48px;">
+            <span>%</span>
+            <div class="arrows">
+              <button type="button" data-target="pct" data-dir="1" aria-label="Aumentar">&#9650;</button>
+              <button type="button" data-target="pct" data-dir="-1" aria-label="Disminuir">&#9660;</button>
+            </div>
+          </div>
+        </div>
+        <input type="range" class="calc-slider" id="calcPct" min="5" max="50" step="1" value="25">
+        <div class="calc-row-caption" data-i18n="calc.onMargin">Sobre el margen</div>
+      </div>
+
+      <div class="calc-note">
+        <span class="calc-note-icon">&#9432;</span>
+        <p data-i18n="calc.note1">Ajustá los valores según tu realidad. Los resultados se recalculan automáticamente.</p>
+      </div>
+    </div>
+
+    <div class="calc-panel result">
+      <div class="calc-panel-head">
+        <span class="calc-panel-label" data-i18n="calc.projection">Proyección estimada</span>
+        <span class="calc-pill" data-i18n="calc.realtime"><span class="dot"></span>En tiempo real</span>
+      </div>
+
+      <div class="calc-stats">
+        <div class="calc-stat">
+          <div class="calc-stat-label" data-i18n="calc.statVentasLabel">Ventas estimadas</div>
+          <div class="calc-stat-value" id="outVentas">—</div>
+          <div class="calc-stat-sub" data-i18n="calc.statVentasSub">Ventas / mes</div>
+        </div>
+        <div class="calc-stat">
+          <div class="calc-stat-label" data-i18n="calc.statCacLabel">Costo por compra objetivo</div>
+          <div class="calc-stat-value" id="outCac">—</div>
+          <div class="calc-stat-sub" data-i18n="calc.statCacSub">CAC estimado</div>
+        </div>
+        <div class="calc-stat">
+          <div class="calc-stat-label" data-i18n="calc.statRoasLabel">ROAS estimado</div>
+          <div class="calc-stat-value" id="outRoas">—</div>
+          <div class="calc-stat-sub" data-i18n="calc.statRoasSub">Retorno de la inversión</div>
+        </div>
+        <div class="calc-stat">
+          <div class="calc-stat-label" data-i18n="calc.statInversionLabel">Inversión mensual estimada</div>
+          <div class="calc-stat-value" id="outInversion">—</div>
+          <div class="calc-stat-sub" data-i18n="calc.statInversionSub">En publicidad</div>
+        </div>
+      </div>
+
+      <div class="calc-note">
+        <span class="calc-note-icon">&#9432;</span>
+        <p data-i18n="calc.note2">Proyección directa según los valores que cargues a la izquierda. El resultado real puede variar según tu mercado, oferta y canal.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="contacto" id="contacto">
+  <canvas id="contacto-canvas"></canvas>
+
+  <div class="contacto-annot" data-i18n="contacto.annot">
+    ESTRATEGIA<br>CREATIVIDAD<br>RESULTADOS REALES
+  </div>
+
+  <div class="contacto-inner">
+    <span class="section-tag" data-i18n="contacto.tag"><span class="dot"></span>CONTACTO<span class="tag-rule"></span></span>
+
+    <div class="contacto-top">
+      <div>
+        <h2 class="contacto-title" data-i18n="contacto.title">La IA puede hacer<br>muchas cosas.<br><em>El criterio, no.</em></h2>
+        <p class="contacto-sub" data-i18n="contacto.sub">Si querés saber más sobre cómo trabajo,<br>escribime. Con gusto te cuento.</p>
+      </div>
+      <div class="contacto-copy" data-i18n="contacto.copy">
+        <p>Como publicista digital reconozco que hoy en día la IA está al alcance de todos y las screenshots no bastan para validar mi trabajo.</p>
+        <p>Pero si lo que creo que es difícil de copiar es el criterio detrás de cada campaña.</p>
+        <p>Si les interesa mi perfil los invito a enviarme un mensaje y con gusto les explico cómo fueron armadas las campañas.</p>
+      </div>
+    </div>
+
+    <div class="contacto-grid">
+      <a class="contact-card" href="https://wa.me/5491158146367" target="_blank" rel="noopener">
+        <div class="contact-card-top">
+          <span class="contact-card-label">WhatsApp</span>
+          <span class="contact-card-arrow">&#8599;</span>
+        </div>
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6 6.32A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.87 11.9L4 20l4.2-1.1a7.9 7.9 0 0 0 3.85 1h.01a7.94 7.94 0 0 0 7.93-7.93 7.9 7.9 0 0 0-2.39-5.65Zm-5.55 12.2h-.01a6.58 6.58 0 0 1-3.36-.92l-.24-.14-2.5.66.67-2.44-.16-.25a6.6 6.6 0 0 1 10.35-8.16 6.55 6.55 0 0 1 1.94 4.66 6.6 6.6 0 0 1-6.69 6.59Zm3.6-4.94c-.2-.1-1.17-.58-1.35-.64-.18-.07-.31-.1-.45.1-.13.2-.5.64-.62.77-.11.13-.23.15-.42.05a5.4 5.4 0 0 1-1.6-.99 6 6 0 0 1-1.1-1.37c-.12-.2 0-.3.09-.4.09-.1.2-.24.3-.36.1-.12.13-.2.2-.33.06-.13.03-.25-.02-.35-.05-.1-.45-1.08-.61-1.48-.16-.39-.33-.33-.45-.34h-.38a.74.74 0 0 0-.53.25c-.18.2-.7.68-.7 1.66 0 .98.72 1.93.82 2.06.1.13 1.4 2.15 3.4 3 .48.2.85.33 1.14.42.48.15.91.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.09-.18-.14-.38-.24Z" fill="currentColor"/></svg>
+        </div>
+        <div class="contact-card-value">+54 9 11 5814 6367</div>
+        <div class="contact-card-cta" data-i18n="contact.whatsappCta">Escribime por WhatsApp</div>
+      </a>
+
+      <a class="contact-card" href="https://mail.google.com/mail/?view=cm&fs=1&to=pablocasco002@gmail.com" target="_blank" rel="noopener">
+        <div class="contact-card-top">
+          <span class="contact-card-label">Gmail</span>
+          <span class="contact-card-arrow">&#8599;</span>
+        </div>
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h.86l6.64 5.2L18.64 5h.86A1.5 1.5 0 0 1 21 6.5v.36l-9 7.05-9-7.05V6.5Z" fill="currentColor"/><path d="M3 8.9 12 16l9-7.1V17.5A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5V8.9Z" fill="currentColor"/></svg>
+        </div>
+        <div class="contact-card-value">pablocasco002@gmail.com</div>
+        <div class="contact-card-cta" data-i18n="contact.gmailCta">Enviame un email</div>
+      </a>
+
+      <a class="contact-card" href="https://www.linkedin.com/in/pablocasco-paidmedia/" target="_blank" rel="noopener">
+        <div class="contact-card-top">
+          <span class="contact-card-label">LinkedIn</span>
+          <span class="contact-card-arrow">&#8599;</span>
+        </div>
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.98 3.5a2.02 2.02 0 1 0 0 4.04 2.02 2.02 0 0 0 0-4.04ZM3.3 9.5h3.37V20.5H3.3V9.5Zm6.2 0h3.23v1.5h.05c.45-.86 1.56-1.77 3.22-1.77 3.44 0 4.08 2.27 4.08 5.22v6.05h-3.37v-5.37c0-1.28-.02-2.93-1.78-2.93-1.79 0-2.06 1.4-2.06 2.84v5.46H9.5V9.5Z" fill="currentColor"/></svg>
+        </div>
+        <div class="contact-card-value">linkedin.com/in/pablocasco-paidmedia</div>
+        <div class="contact-card-cta" data-i18n="contact.linkedinCta">Conectemos en LinkedIn</div>
+      </a>
+
+      <a class="contact-card" href="https://www.instagram.com/pablocasco.ads/" target="_blank" rel="noopener">
+        <div class="contact-card-top">
+          <span class="contact-card-label">Instagram</span>
+          <span class="contact-card-arrow">&#8599;</span>
+        </div>
+        <div class="contact-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><circle cx="17.15" cy="6.85" r="1.1" fill="currentColor"/></svg>
+        </div>
+        <div class="contact-card-value">@pablocasco.ads</div>
+        <div class="contact-card-cta" data-i18n="contact.instagramCta">Seguime en Instagram</div>
+      </a>
+    </div>
+
+    <div class="contacto-foot">
+      <div class="contacto-coords"><span>&#8853;</span> -34.6037&deg;&nbsp;&nbsp;-58.3816&deg;</div>
+      <div class="contacto-bye" data-i18n="contacto.bye"><span class="rule"></span>Gracias por tu tiempo.<br>¡Nos vemos!</div>
+    </div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<script>
+window.NICHOS_DATA = [
+  { name:'Estética capilar', name_en:'Hair Aesthetics', icon:'<path d="M6 4c3 0 4 3 4 8s-1 8-4 8"/><path d="M18 4c-3 0-4 3-4 8s1 8 4 8"/><path d="M10 12h4"/>' },
+  { name:'Skincare', name_en:'Skincare', icon:'<circle cx="12" cy="12" r="7.5"/><circle cx="9.6" cy="10" r=".9" fill="currentColor" stroke="none"/><path d="M9 15c1 1 5 1 6 0"/>' },
+  { name:'Electrodomésticos', name_en:'Home Appliances', icon:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M6 10h12"/><path d="M9 6h0"/><path d="M9 14h0"/>' },
+  { name:'Indumentaria', name_en:'Apparel', icon:'<path d="M9 4L4 7v3h3v10h10V10h3V7l-5-3"/><path d="M9 4a3 3 0 006 0"/>' },
+  { name:'Alimentos', name_en:'Food', icon:'<path d="M7 3v8a2 2 0 002 2v8"/><path d="M7 3v6M10 3v6"/><path d="M17 3c-2 0-3 2-3 5s1 5 3 5v8"/>' },
+  { name:'Cirugía Plástica', name_en:'Plastic Surgery', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/>' },
+  { name:'ONG', name_en:'NGO', icon:'<path d="M12 20s-8-4.7-8-10.5A4.5 4.5 0 0112 6.5 4.5 4.5 0 0120 9.5C20 15.3 12 20 12 20z"/>' }
+];
+</script>
+
+<script>
+(function(){
+  var canvas = document.getElementById('hero-canvas');
+  var ctx = canvas.getContext('2d');
+  var hero = document.querySelector('.hero');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var W,H,DPR,t0=performance.now();
+
+  // ---- perfect-loop time base --------------------------------------------
+  // Everything time-dependent is driven off `time`, which is wrapped to
+  // [0,LOOP) every frame. Any oscillating term uses a frequency that is an
+  // integer multiple of TAU/LOOP (wf(k) below), and any linear "travel" term
+  // (dash flow, particle advection) is scaled so it covers an exact integer
+  // number of its own pattern-lengths within LOOP. Both guarantees together
+  // mean frame(time=LOOP-epsilon) and frame(time=0) are visually identical —
+  // a seamless, mathematically exact loop, not an approximated one.
+  var LOOP = 8, TAU = Math.PI*2;
+  function wf(k){ return k*TAU/LOOP; }
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = hero.clientWidth; H = hero.clientHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    buildField();
+  }
+
+  var hubX, hubY, textEdge, baseY;
+  var mainStrands=[], backStrands=[], motes=[], detached=[], stars=[];
+
+  // Traveling metric cards: CTR / RPV / Hook Rate / ROAS, each riding its
+  // own horizontal lane. Lanes are chosen to clear the headline block
+  // (~28%-61% of H) and the "CONVERSIONES REALES" annotation (~82%-86% of
+  // H) entirely, so no card ever sits at full opacity over the main copy —
+  // verified with Playwright against the actual rendered boxes.
+  var metricCards = [
+    { el: document.getElementById('metric-ctr'),  lane: 0.16,  cycle: 11, delay: 0 },
+    { el: document.getElementById('metric-rpv'),  lane: 0.616, cycle: 11, delay: 2.75 },
+    { el: document.getElementById('metric-hook'), lane: 0.716, cycle: 11, delay: 5.5 },
+    { el: document.getElementById('metric-roas'), lane: 0.876, cycle: 11, delay: 8.25 }
+  ].filter(function(m){ return m.el; });
+  for(var mci=0; mci<metricCards.length; mci++){
+    metricCards[mci].el.style.top = (metricCards[mci].lane*100)+'%';
+  }
+
+  // Shared centerline: ONE coherent wave path (a gaussian crest sitting at
+  // the hub next to the CTR card, plus two gentle harmonics), so every
+  // thread/particle rides the same curve instead of a radial fan.
+  function centerY(x, time){
+    var crestW = W*0.36;
+    var dx = (x-hubX)/crestW;
+    var crest = Math.exp(-dx*dx) * H*0.15;
+    var ripple = Math.sin((x-textEdge)*0.0045 + time*wf(1)) * H*0.045
+               + Math.sin(x*0.0078 + 1.7 + time*wf(2)) * H*0.03;
+    return baseY - crest + ripple;
+  }
+  function envelope(x){ var dx=(x-hubX)/(W*0.26); return Math.exp(-dx*dx); }
+  function edgeFade(x){
+    var d = (x-textEdge)/(W*0.16);
+    var f = Math.max(0, Math.min(1, 0.5+0.5*d));
+    return Math.max(0.035, f);
+  }
+  function ribbonSpread(x){ return H*0.09 + (1-envelope(x))*H*0.06; }
+
+  function makeStrand(spreadMul){
+    var cyc = [2,3,4,5][Math.floor(Math.random()*4)]; // integer dash cycles per LOOP
+    return {
+      offset:(Math.random()-0.5)*2*spreadMul,
+      jK: [1,1,2][Math.floor(Math.random()*3)],      // integer wobble freq (loop-safe)
+      jAmp: 2+Math.random()*6,
+      jPhase: Math.random()*TAU,
+      jSign: Math.random()<0.5?-1:1,
+      weight: 0.15+Math.random()*0.45,
+      w: 0.4+Math.random()*0.5,
+      dashLen: 3+Math.random()*4,
+      gapLen: 7+Math.random()*8,
+      dashCyc: cyc
+    };
+  }
+
+  function buildField(){
+    hubX = W*0.732; baseY = H*0.536; textEdge = W*0.335;
+    hubY = centerY(hubX,0);
+
+    // Silk-thread density: many fine strands riding the SAME curve (not a
+    // crossing grid) — this is what actually reads as flowing silk/hair
+    // rather than a technical wireframe. backStrands sit wider + dimmer +
+    // blurred, which is what makes a second band visibly cross under the
+    // main one where the curve bends.
+    mainStrands = []; for(var i=0;i<105;i++) mainStrands.push(makeStrand(1));
+    backStrands = []; for(var j=0;j<30;j++) backStrands.push(makeStrand(1.5));
+
+    // motes: tiny points of light that visibly travel along the wave,
+    // left -> right, each doing an exact integer number of full sweeps
+    // per LOOP so their trail position matches perfectly at the seam.
+    motes = [];
+    var mn = Math.round((W*H)/2600);
+    for(var m=0;m<mn;m++){
+      motes.push({
+        x0: Math.random()*W,
+        sweeps: (Math.random()<0.7?1:2),
+        off:(Math.random()-0.5)*2.6,
+        r:0.4+Math.random()*1.3,
+        twK:[1,2,3][Math.floor(Math.random()*3)],
+        twp:Math.random()*TAU
+      });
+    }
+
+    // detached particles: a smaller set that drifts away from the ribbon
+    // body with a larger, slower perpendicular excursion + its own gentle
+    // horizontal creep, reading as depth (things floating in front/behind).
+    detached = [];
+    var dn = Math.round((W*H)/8500);
+    for(var d=0;d<dn;d++){
+      detached.push({
+        x0:Math.random()*W,
+        sweeps:1,
+        baseOff:(Math.random()<0.5?-1:1)*(1.6+Math.random()*2.2),
+        driftK:1,
+        driftAmp:0.7+Math.random()*0.9,
+        phase:Math.random()*TAU,
+        r:0.8+Math.random()*1.5,
+        front: Math.random()<0.5
+      });
+    }
+
+    // ambient starfield: sparse, near-static dust scattered across the
+    // WHOLE canvas (not tied to the wave curve at all) — the reference has
+    // fine bright specks well outside the ribbon body, like a night sky.
+    stars = [];
+    var sn = Math.round((W*H)/8000);
+    for(var st=0; st<sn; st++){
+      stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        r: 0.4+Math.random()*1.1,
+        base: 0.08+Math.random()*0.22,
+        twK: [1,1,2,3][Math.floor(Math.random()*4)],
+        twp: Math.random()*TAU
+      });
+    }
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  function strokeStrandPath(s, time, spreadMul){
+    ctx.beginPath();
+    for(var x=0; x<=W; x+=6){
+      var spread = ribbonSpread(x)*spreadMul;
+      var jitter = Math.sin(x*0.01 + s.jPhase + time*wf(s.jK)*s.jSign) * s.jAmp;
+      var y = centerY(x,time) + s.offset*spread + jitter;
+      if(x===0){ ctx.moveTo(x,y); } else { ctx.lineTo(x,y); }
+    }
+  }
+
+  function frame(now){
+    var traw = (now-t0)/1000;
+    var time = traw % LOOP;
+    ctx.clearRect(0,0,W,H);
+
+    // ---- ambient starfield: fine, near-static dust across the whole field,
+    // independent of the wave — reads as depth/sky behind the ribbon -------
+    for(var si=0; si<stars.length; si++){
+      var st = stars[si];
+      var tw = 0.6+0.4*Math.sin(time*wf(st.twK)+st.twp);
+      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, TAU);
+      ctx.fillStyle = 'rgba(210,255,248,'+(st.base*tw).toFixed(3)+')';
+      ctx.fill();
+    }
+
+    // slow organic "breathing" of the whole field's intensity — one gentle
+    // swell per loop, never fully dimming.
+    var breathe = 0.86 + 0.14*Math.sin(time*wf(1) - Math.PI/2);
+
+    // ambient fog/glow tracing the centerline — a wide, very soft halo so
+    // the wave reads as a volume of light rather than a drawn line, and
+    // dissolves into the black background with no hard edge anywhere.
+    // Built from layered plain strokes (no ctx.filter): a canvas blur()
+    // filter forces a full convolution pass over its whole draw every
+    // frame, and this one stroke's bounding box spans nearly the entire
+    // canvas — measured with a Playwright CPU profile at ~250-300ms/frame
+    // on its own, the single biggest cost in the whole scene. Widening
+    // strokes with falling alpha reads as the same soft halo for a
+    // fraction of the cost.
+    ctx.beginPath();
+    for(var fx=0; fx<=W; fx+=10){
+      var fy = centerY(fx,time);
+      if(fx===0) ctx.moveTo(fx,fy); else ctx.lineTo(fx,fy);
+    }
+    ctx.lineCap = 'round';
+    var fogAlpha = 0.065*breathe;
+    ctx.strokeStyle = 'rgba(60,220,205,'+(fogAlpha*0.35).toFixed(3)+')';
+    ctx.lineWidth = H*0.22;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(60,220,205,'+(fogAlpha*0.65).toFixed(3)+')';
+    ctx.lineWidth = H*0.15;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(60,220,205,'+fogAlpha.toFixed(3)+')';
+    ctx.lineWidth = H*0.10;
+    ctx.stroke();
+
+    // hub bloom
+    var g = ctx.createRadialGradient(hubX,hubY,0,hubX,hubY,W*0.19);
+    g.addColorStop(0,'rgba(0,246,223,'+(0.13*breathe).toFixed(3)+')');
+    g.addColorStop(1,'rgba(0,246,223,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    // ---- back layer: dimmer, wider spread — sits "behind" the main body
+    // and, where the curve bends, visibly crosses under it, which is what
+    // gives the reference its layered/braided look. Same layered-stroke
+    // trick instead of ctx.filter blur (applying a filter to 30 separate
+    // stroke() calls re-runs the blur convolution 30 times a frame).
+    ctx.lineCap = 'round';
+    for(var bi=0; bi<backStrands.length; bi++){
+      var bs = backStrands[bi];
+      var bclose = Math.exp(-(bs.offset*bs.offset)*0.6);
+      strokeStrandPath(bs, time, 1);
+      var backAlpha = bs.weight*0.4*bclose*breathe*edgeFade(hubX);
+      ctx.strokeStyle = 'rgba(70,215,200,'+(backAlpha*0.5).toFixed(3)+')';
+      ctx.lineWidth = bs.w*2.2;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(70,215,200,'+backAlpha.toFixed(3)+')';
+      ctx.lineWidth = bs.w;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // ---- main body: many fine silk-like threads, each a faint continuous
+    // glow + a travelling string of short luminous dashes — never one solid
+    // outline, and never a crossing grid ----------------------------------
+    ctx.lineCap = 'round';
+    for(var i=0;i<mainStrands.length;i++){
+      var s = mainStrands[i];
+      var close = Math.exp(-(s.offset*s.offset)*0.95);
+      strokeStrandPath(s, time, 1);
+
+      // faint base cohesion stroke (the "fog" that holds the thread together)
+      ctx.globalAlpha = s.weight*0.16*close*breathe;
+      ctx.strokeStyle = 'rgba(70,225,205,'+(0.5*envelope(hubX)).toFixed(3)+')';
+      ctx.shadowBlur = 0;
+      ctx.setLineDash([]);
+      ctx.lineWidth = s.w*0.9;
+      ctx.stroke();
+
+      // travelling luminous dash-segments — a marching string of short
+      // light beads flowing left -> right along the exact same path.
+      // Glow is faked with 2 cheap oversized under-strokes instead of
+      // ctx.shadowBlur: a dashed multi-point path (~240 pts) stroked with
+      // shadowBlur forces the browser to rasterize the blur PER DASH
+      // SEGMENT, and across 105 strands that collapsed the page to ~1fps
+      // (measured with a Playwright rAF profiler before this fix — real
+      // dropped frames, not an easing issue). Plain oversized strokes are
+      // just strokes, no per-segment shadow, and read as the same soft
+      // halo at this thread thinness.
+      var pattern = s.dashLen+s.gapLen;
+      var dashSpeed = pattern*s.dashCyc/LOOP; // exact integer cycles per LOOP
+      ctx.setLineDash([s.dashLen, s.gapLen]);
+      ctx.lineDashOffset = -time*dashSpeed;
+      var dashAlpha = s.weight*0.75*close*breathe;
+      ctx.strokeStyle = 'rgba(90,235,215,'+(dashAlpha*0.30).toFixed(3)+')';
+      ctx.lineWidth = s.w*2.8;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(140,255,238,'+(dashAlpha*0.55).toFixed(3)+')';
+      ctx.lineWidth = s.w*1.6;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(190,255,248,'+dashAlpha.toFixed(3)+')';
+      ctx.lineWidth = s.w;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.globalAlpha = 1;
+
+    // ---- motes: tiny particles advecting along the curve (real travel,
+    // not just vertical bobbing) ------------------------------------------
+    for(var k=0;k<motes.length;k++){
+      var p = motes[k];
+      var x = (p.x0 + traw*(W*p.sweeps/LOOP)) % W;
+      var spread = ribbonSpread(x);
+      var y = centerY(x,time) + p.off*spread*1.5;
+      var env2 = envelope(x), fade = edgeFade(x);
+      var close2 = Math.exp(-(p.off*p.off)*0.9);
+      var tw = 0.5+0.5*Math.sin(time*wf(p.twK)+p.twp);
+      var a = (0.14+0.5*env2)*fade*close2*tw*breathe;
+      ctx.beginPath(); ctx.arc(x,y,p.r,0,TAU);
+      ctx.fillStyle='rgba(150,255,238,'+a.toFixed(3)+')';
+      ctx.fill();
+    }
+
+    // ---- detached particles: a few motes that drift clear of the ribbon
+    // body (some drawn after, "in front") for a sense of depth ------------
+    for(var e=0;e<detached.length;e++){
+      var q = detached[e];
+      var dx2 = (q.x0 + traw*(W*q.sweeps/LOOP)) % W;
+      var bob = Math.sin(time*wf(q.driftK)+q.phase)*q.driftAmp;
+      var spread2 = ribbonSpread(dx2);
+      var dy = centerY(dx2,time) + (q.baseOff+bob*0.3)*spread2;
+      var envd = envelope(dx2), faded = edgeFade(dx2);
+      var twd = 0.55+0.45*Math.sin(time*wf(1)+q.phase*1.3);
+      var ad = (0.10+0.32*envd)*faded*twd*breathe*(q.front?1.3:0.7);
+      ctx.beginPath(); ctx.arc(dx2,dy,q.r*(q.front?1.15:0.85),0,TAU);
+      ctx.fillStyle='rgba(190,255,242,'+Math.min(0.85,ad).toFixed(3)+')';
+      if(q.front){ ctx.shadowBlur=5; ctx.shadowColor='rgba(120,255,235,.8)'; ctx.fill(); ctx.shadowBlur=0; }
+      else { ctx.fill(); }
+    }
+
+    // leader lines to the fixed annotation callouts (static UI, no animation)
+    function pt(id){ var el=document.getElementById(id); var r=el.getBoundingClientRect(); var hr=hero.getBoundingClientRect(); return {x:r.left-hr.left, y:r.top-hr.top, w:r.width, h:r.height}; }
+    var a = pt('annot-a'), b = pt('annot-b'), c = pt('annot-c');
+    function leaderTo(originX, originY, dotX, dotY){
+      ctx.beginPath(); ctx.moveTo(originX,originY); ctx.lineTo(dotX,dotY);
+      ctx.strokeStyle='rgba(180,220,215,.28)'; ctx.lineWidth=1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(dotX,dotY,2.6,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,246,223,.85)'; ctx.shadowBlur=6; ctx.shadowColor='rgba(0,246,223,.9)'; ctx.fill(); ctx.shadowBlur=0;
+    }
+    leaderTo(a.x+a.w, a.y+a.h, a.x+a.w+55, a.y+a.h+45);
+    leaderTo(b.x, b.y+b.h*0.5, b.x-58, b.y+70);
+    leaderTo(c.x+c.w*0.35, c.y, c.x-58, c.y-42);
+
+    // ---- traveling metric cards: CTR / RPV / Hook Rate / ROAS ride the
+    // signal from right to left, each pinned to the wave by a thin line +
+    // dot, fading out as they approach the headline (textEdge) -----------
+    for(var mi=0; mi<metricCards.length; mi++){
+      var mc = metricCards[mi];
+      var prog = reduce ? (mi/metricCards.length)
+                         : (((traw + mc.delay) % mc.cycle) / mc.cycle);
+      var mxStart = W*1.04, mxEnd = textEdge - W*0.02;
+      var mx = mxStart + (mxEnd-mxStart)*prog;
+      var mop = reduce ? 1
+               : (prog<0.05 ? prog/0.05 : (prog>0.72 ? Math.max(0,(1-prog)/0.28) : 1));
+      mc.el.style.left = mx+'px';
+      mc.el.style.opacity = mop.toFixed(3);
+      if(mop>0.01){
+        var mcw = mc.el.offsetWidth, mcBottom = mc.lane*H + mc.el.offsetHeight;
+        var mDotX = mx+mcw/2, mDotY = centerY(mDotX,time);
+        ctx.beginPath(); ctx.moveTo(mDotX, mcBottom+4); ctx.lineTo(mDotX, mDotY);
+        ctx.strokeStyle = 'rgba(0,246,223,'+(0.35*mop).toFixed(3)+')'; ctx.lineWidth=1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(mDotX,mDotY,3,0,TAU);
+        ctx.fillStyle='rgba(0,246,223,'+(0.85*mop).toFixed(3)+')';
+        ctx.shadowBlur=7; ctx.shadowColor='rgba(0,246,223,.9)'; ctx.fill(); ctx.shadowBlur=0;
+      }
+    }
+
+    // hub node (soft pulses emitted from the hub itself — a fixed signal
+    // anchor near the wave crest; everything else besides the travelling
+    // cards above stays static)
+
+    // expanding pulse rings, an exact 4-per-LOOP cycle (2s each) so the
+    // burst always fades to ~0 before the next one starts — no pop at the
+    // loop seam.
+    var pPeriod = LOOP/4;
+    var pPhase = (time % pPeriod)/pPeriod;
+    var pr = 16 + pPhase*34, pa = reduce?0:(1-pPhase)*0.35;
+    ctx.beginPath(); ctx.arc(hubX,hubY,pr,0,TAU);
+    ctx.strokeStyle='rgba(0,246,223,'+pa.toFixed(3)+')'; ctx.lineWidth=1; ctx.stroke();
+
+    var corePulse = 0.5+0.5*Math.sin(time*wf(2));
+    ctx.beginPath(); ctx.arc(hubX,hubY, 19+corePulse*2.5, 0, Math.PI*2);
+    ctx.strokeStyle='rgba(0,246,223,.4)'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(hubX,hubY, 6.5, 0, Math.PI*2);
+    ctx.fillStyle='#eafffb'; ctx.shadowBlur=18; ctx.shadowColor='rgba(0,246,223,1)'; ctx.fill(); ctx.shadowBlur=0;
+
+    if(!reduce && inView) requestAnimationFrame(frame); else running = false;
+  }
+
+  // Pause once the Hero is scrolled well out of view (e.g. once you're
+  // reading Casos/Calculadora/Contacto further down) — same fix as the
+  // Nichos/Contacto canvases, so only the section actually on screen is
+  // ever spending frame budget.
+  var inView = true, running = true;
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        inView = en.isIntersecting;
+        if(inView && !running && !reduce){ running = true; requestAnimationFrame(frame); }
+      });
+    }, {rootMargin:'150px'});
+    io.observe(hero);
+  }
+
+  requestAnimationFrame(frame);
+  if(reduce) frame(performance.now());
+})();
+</script>
+
+<script>
+(function(){
+  var stage = document.getElementById('nichosStage');
+  var canvas = document.getElementById('nichos-canvas');
+  var ctx = canvas.getContext('2d');
+  var track = document.getElementById('nichosTrack');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var LOOP = 8, TAU = Math.PI*2;
+  function wf(k){ return k*TAU/LOOP; }
+
+  var W,H,DPR,t0=performance.now(), lastNow=t0;
+  var offset = 0, setWidth = 0, paused = false, hoveredEl = null;
+  var strands = [];
+  var SPEED = 34; // px/sec, right -> left
+
+  function buildTrack(){
+    track.innerHTML = '';
+    var COPIES = 4;
+    for(var c=0;c<COPIES;c++){
+      window.NICHOS_DATA.forEach(function(n){
+        var el = document.createElement('div');
+        el.className = 'nicho';
+        el.innerHTML = '<div class="nicho-ring"><svg viewBox="0 0 24 24">'+n.icon+'</svg></div><div class="nicho-label">'+n.name+'</div>';
+        el.addEventListener('mouseenter', function(){
+          // Ignore the hover right at the left/right edge of the stage. Two
+          // things need room to fully clear there: the .nichos-stage mask-image
+          // (fades in/out over the first/last 6% of the stage width) and the
+          // enlarge+glow itself (ring scales to 1.32x + ~34px shadow blur).
+          // The margin has to track the mask's 6%, not a fixed pixel value —
+          // measured empirically (pixel-brightness sampling of the ring at
+          // increasing distance from the edge) that the mask's falloff plus
+          // the glow blur only fully clears a bit past that 6%, hence the
+          // added buffer below.
+          var r = el.getBoundingClientRect();
+          var stageRect = stage.getBoundingClientRect();
+          var cx = (r.left + r.right)/2 - stageRect.left;
+          var margin = stageRect.width * 0.065 + 48;
+          if(cx < margin || cx > stageRect.width - margin) return;
+          el.classList.add('active'); hoveredEl = el; paused = true;
+        });
+        el.addEventListener('mouseleave', function(){ el.classList.remove('active'); if(hoveredEl===el) hoveredEl = null; paused = false; });
+        track.appendChild(el);
+      });
+    }
+  }
+
+  function measureSetWidth(){
+    var items = track.querySelectorAll('.nicho');
+    var n = window.NICHOS_DATA.length, w = 0;
+    for(var i=0;i<n && i<items.length;i++){ w += items[i].getBoundingClientRect().width; }
+    return w || 1610;
+  }
+
+  function buildStrands(){
+    strands = [];
+    for(var i=0;i<40;i++){
+      var cyc = [2,3,4][Math.floor(Math.random()*3)];
+      strands.push({
+        offset:(Math.random()-0.5)*2,
+        jK:[1,1,2][Math.floor(Math.random()*3)],
+        jAmp:2+Math.random()*5,
+        jPhase:Math.random()*TAU,
+        weight:0.18+Math.random()*0.4,
+        w:0.5+Math.random()*0.7,
+        dashLen:3+Math.random()*4, gapLen:7+Math.random()*7, dashCyc:cyc
+      });
+    }
+  }
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = stage.clientWidth; H = stage.clientHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    setWidth = measureSetWidth();
+  }
+
+  window.addEventListener('resize', resize);
+  buildTrack();
+  buildStrands();
+  resize();
+
+  function baseWaveY(x, time){
+    var base = H*0.6;
+    var w1 = Math.sin(x*0.0034 + time*wf(1)) * H*0.15;
+    var w2 = Math.sin(x*0.0063 + 1.4 + time*wf(2)) * H*0.08;
+    return base + w1 + w2;
+  }
+  function hotEnv(x, hotX){
+    if(hotX===null) return 0;
+    var dx = (x-hotX)/(W*0.12);
+    return Math.exp(-dx*dx);
+  }
+  function waveY(x, time, hotX){
+    return baseWaveY(x,time) - hotEnv(x,hotX)*H*0.05;
+  }
+  function ribbonSpread(){ return H*0.07; }
+  function strandPath(s, time, hotX){
+    ctx.beginPath();
+    for(var x=0; x<=W; x+=8){
+      var jitter = Math.sin(x*0.012 + s.jPhase + time*wf(s.jK)) * s.jAmp;
+      var y = waveY(x,time,hotX) + s.offset*ribbonSpread() + jitter;
+      if(x===0){ ctx.moveTo(x,y); } else { ctx.lineTo(x,y); }
+    }
+  }
+
+  function frame(now){
+    var dt = Math.min(0.05, (now-lastNow)/1000); lastNow = now;
+    var traw = (now-t0)/1000;
+    var time = traw % LOOP;
+
+    if(!paused && !reduce){
+      offset += SPEED*dt;
+      if(setWidth>0 && offset>=setWidth) offset -= setWidth;
+      track.style.transform = 'translateX(' + (-offset) + 'px)';
+    }
+
+    ctx.clearRect(0,0,W,H);
+
+    var stageRect = stage.getBoundingClientRect();
+    var hotX = null;
+    if(hoveredEl){
+      var hr = hoveredEl.getBoundingClientRect();
+      hotX = (hr.left+hr.right)/2 - stageRect.left;
+    }
+
+    var breathe = 0.85 + 0.15*Math.sin(time*wf(1) - Math.PI/2);
+
+    // ambient fog along the centerline — layered plain strokes instead of
+    // ctx.filter blur (same fix as the Hero canvas: a filter blur re-runs
+    // its convolution every frame over almost the whole canvas, and this
+    // ran continuously even while the section was off-screen, which is
+    // what made the Hero feel choppy even though this canvas isn't the
+    // one you're looking at)
+    ctx.beginPath();
+    for(var fx=0; fx<=W; fx+=12){
+      var fy = waveY(fx,time,hotX);
+      if(fx===0) ctx.moveTo(fx,fy); else ctx.lineTo(fx,fy);
+    }
+    ctx.lineCap = 'round';
+    var fogAlpha2 = 0.09*breathe;
+    ctx.strokeStyle = 'rgba(60,220,205,'+(fogAlpha2*0.4).toFixed(3)+')';
+    ctx.lineWidth = H*0.32;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(60,220,205,'+fogAlpha2.toFixed(3)+')';
+    ctx.lineWidth = H*0.22;
+    ctx.stroke();
+
+    // strands: base cohesion stroke + travelling dash segments (glow faked
+    // with layered oversized strokes, not shadowBlur — see Hero canvas for
+    // the measured cost of shadowBlur+dash across many strands)
+    ctx.lineCap = 'round';
+    for(var i=0;i<strands.length;i++){
+      var s = strands[i];
+      var close = Math.exp(-(s.offset*s.offset)*0.85);
+      strandPath(s, time, hotX);
+      ctx.globalAlpha = s.weight*0.3*close*breathe;
+      ctx.strokeStyle = 'rgba(70,225,205,.5)';
+      ctx.setLineDash([]);
+      ctx.lineWidth = s.w*0.9;
+      ctx.stroke();
+
+      var pattern = s.dashLen+s.gapLen;
+      var dashSpeed = pattern*s.dashCyc/LOOP;
+      ctx.setLineDash([s.dashLen, s.gapLen]);
+      ctx.lineDashOffset = -time*dashSpeed;
+      var dashAlpha2 = s.weight*close*breathe;
+      ctx.strokeStyle = 'rgba(90,235,215,'+(dashAlpha2*0.35).toFixed(3)+')';
+      ctx.lineWidth = s.w*2.6;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(190,255,248,'+dashAlpha2.toFixed(3)+')';
+      ctx.lineWidth = s.w;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.globalAlpha = 1;
+
+    // hotspot glow (brighter local field under the hovered niche) — radius
+    // capped to the room actually available above/below its center so the
+    // radial fade always completes before the canvas edge (otherwise it
+    // reads as a hard-edged box instead of a soft glow).
+    if(hotX!==null){
+      var hy = waveY(hotX,time,hotX);
+      var glowR = Math.max(36, Math.min(hy, H-hy, W*0.14) * 0.92);
+      var g = ctx.createRadialGradient(hotX,hy,0,hotX,hy,glowR);
+      g.addColorStop(0,'rgba(0,246,223,.35)');
+      g.addColorStop(1,'rgba(0,246,223,0)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    }
+
+    // connector stems + dots for every currently laid-out niche
+    var items = track.querySelectorAll('.nicho');
+    for(var k=0;k<items.length;k++){
+      var el = items[k];
+      var r = el.getBoundingClientRect();
+      var x = (r.left+r.right)/2 - stageRect.left;
+      if(x < -40 || x > W+40) continue;
+      var ring = el.querySelector('.nicho-ring').getBoundingClientRect();
+      var stemTop = ring.bottom - stageRect.top + 22;
+      var y = waveY(x,time,hotX);
+      var active = el.classList.contains('active');
+      ctx.beginPath(); ctx.moveTo(x, stemTop); ctx.lineTo(x, y);
+      ctx.strokeStyle = active? 'rgba(0,246,223,.6)' : 'rgba(150,180,180,.22)';
+      ctx.lineWidth = active?1.3:1;
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x,y, active?5.5:3, 0, TAU);
+      if(active){ ctx.fillStyle='#eafffb'; ctx.shadowBlur=16; ctx.shadowColor='rgba(0,246,223,1)'; }
+      else { ctx.fillStyle='rgba(120,255,235,.65)'; ctx.shadowBlur=0; }
+      ctx.fill(); ctx.shadowBlur=0;
+    }
+
+    if(!reduce && inView) requestAnimationFrame(frame); else running = false;
+  }
+
+  // Pause this canvas's rAF loop entirely while the Nichos section is
+  // scrolled out of view. This canvas was running full-tilt from page
+  // load regardless of scroll position — measured with a Playwright CPU
+  // profile, its always-on shadowBlur/dash strand loop was still costing
+  // real frame time on the Hero even while Nichos itself was off-screen
+  // and nobody was looking at it. Combined with fixing the shadowBlur
+  // itself, this means Nichos only spends CPU while it's actually visible.
+  var inView = true, running = true;
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        inView = en.isIntersecting;
+        if(inView && !running){ running = true; requestAnimationFrame(frame); }
+      });
+    }, {rootMargin:'150px'});
+    io.observe(stage);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+// ============ Casos: accordion + lightbox ============
+(function(){
+  var cards = document.querySelectorAll('.case-card');
+  cards.forEach(function(card){
+    var btn = card.querySelector('.case-header');
+    btn.addEventListener('click', function(){
+      var willOpen = !card.classList.contains('open');
+      card.classList.toggle('open', willOpen);
+      btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+  });
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightboxImg');
+  var lightboxClose = document.getElementById('lightboxClose');
+
+  function openLightbox(src, alt){
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightbox.classList.add('open');
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+  }
+
+  document.querySelectorAll('.shot-thumb').forEach(function(thumb){
+    thumb.addEventListener('click', function(e){
+      e.stopPropagation();
+      var full = thumb.getAttribute('data-full');
+      var img = thumb.querySelector('img');
+      openLightbox(full, img ? img.alt : '');
+    });
+  });
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function(e){
+    if(e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeLightbox();
+  });
+})();
+</script>
+
+<script>
+// ============ Calculadora ============
+(function(){
+  var CYAN = '#00f6df';
+
+  function clamp(v,min,max){ return Math.min(max, Math.max(min, v)); }
+  function parseNum(str){ var n = parseInt(String(str).replace(/[^\d-]/g,''),10); return isNaN(n) ? 0 : n; }
+  function fmtInt(n){ return Math.round(n).toLocaleString(window.currentLang==='en' ? 'en-US' : 'es-AR'); }
+  function fmtRoas(n){ return (Math.round(n*10)/10).toFixed(1) + 'x'; }
+
+  function control(sliderId, numId, opts){
+    var slider = document.getElementById(sliderId);
+    var num = document.getElementById(numId);
+    var min = parseFloat(slider.min), max = parseFloat(slider.max);
+
+    function fill(){
+      var pct = (parseFloat(slider.value) - min) / (max - min) * 100;
+      slider.style.background = 'linear-gradient(to right, '+CYAN+' 0%, '+CYAN+' '+pct+'%, rgba(255,255,255,.1) '+pct+'%, rgba(255,255,255,.1) 100%)';
+    }
+    function setValue(v, opts2){
+      v = clamp(v, min, max);
+      slider.value = v;
+      num.value = opts.suffix ? v : fmtInt(v);
+      fill();
+      if(!(opts2 && opts2.silent)) recalc();
+    }
+
+    slider.addEventListener('input', function(){ setValue(parseFloat(slider.value)); });
+    num.addEventListener('input', function(){
+      var v = parseNum(num.value);
+      slider.value = clamp(v, min, max);
+      fill();
+      recalc();
+    });
+    num.addEventListener('blur', function(){ setValue(parseNum(num.value)); });
+
+    setValue(parseFloat(slider.value), { silent:true });
+    return {
+      get: function(){ return parseFloat(slider.value); },
+      set: setValue,
+      // Lets the currency switch (USD/ARS) swap the slider's range live —
+      // min/max are captured once in this closure, so just editing the
+      // DOM attribute wouldn't update clamp()'s bounds without this.
+      setBounds: function(newMin, newMax, newStep){
+        min = newMin; max = newMax;
+        slider.min = newMin; slider.max = newMax; slider.step = newStep;
+        fill();
+      }
+    };
+  }
+
+  var facturacionCtrl = control('calcFacturacion','calcFacturacionNum', {});
+  var ticketCtrl = control('calcTicket','calcTicketNum', {});
+  var pctCtrl = control('calcPct','calcPctNum', { suffix:true });
+
+  document.querySelectorAll('.calc-stepper .arrows button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = btn.getAttribute('data-target');
+      var dir = parseFloat(btn.getAttribute('data-dir'));
+      var ctrl = target === 'facturacion' ? facturacionCtrl : target === 'ticket' ? ticketCtrl : pctCtrl;
+      var slider = document.getElementById(target === 'facturacion' ? 'calcFacturacion' : target === 'ticket' ? 'calcTicket' : 'calcPct');
+      var step = parseFloat(slider.step) || 1;
+      ctrl.set(ctrl.get() + dir*step);
+    });
+  });
+
+  function recalc(){
+    var facturacion = facturacionCtrl.get();
+    var ticket = Math.max(1, ticketCtrl.get());
+    var pct = pctCtrl.get();
+
+    var ventas = facturacion / ticket;
+    var inversion = facturacion * (pct/100);
+    var cac = ticket * (pct/100);
+    var roas = inversion > 0 ? facturacion / inversion : 0;
+
+    document.getElementById('outVentas').textContent = fmtInt(ventas);
+    document.getElementById('outCac').textContent = calcCurPrefix + fmtInt(cac);
+    document.getElementById('outRoas').textContent = fmtRoas(roas);
+    document.getElementById('outInversion').textContent = calcCurPrefix + fmtInt(inversion);
+  }
+
+  // ---- Moneda de la calculadora: pesos (ARS) en español, dólares (USD) en
+  // inglés (pedido de Pablo, 2026-09-13). Además de la etiqueta/símbolo, se
+  // reescalan los rangos/valores de los sliders — dejar los mismos números
+  // de USD (500-100.000) etiquetados como pesos daría montos irrisorios por
+  // la devaluación del peso. Conversión aproximada y redondeada (dólar
+  // blue ~$1.545 el 13/09/2026, ver fuente en la memoria del proyecto), no
+  // es una cotización en vivo. Ambas monedas mantienen la MISMA proporción
+  // Facturación/Ticket que los valores por defecto originales, así que
+  // Ventas/CAC/ROAS/Inversión dan exactamente igual en cualquiera de las
+  // dos (son ratios, no dependen de la moneda).
+  var CALC_RATE = 1500; // pesos por dólar (aprox., redondeado)
+  var CALC_RANGES = {
+    usd: { fact:{min:500, max:100000, step:500, def:10000}, tick:{min:5, max:2000, step:5, def:120} },
+    ars: { fact:{min:500000, max:150000000, step:500000, def:15000000}, tick:{min:5000, max:3000000, step:5000, def:180000} }
+  };
+  var calcCurrency = null, calcCurPrefix = 'USD ';
+
+  function applyCalcCurrency(lang){
+    var target = lang === 'en' ? 'usd' : 'ars';
+    if(target === calcCurrency) return;
+    var r = CALC_RANGES[target];
+    if(calcCurrency === null){
+      // primera carga: no hay nada previo que convertir, se usan los
+      // valores por defecto de esa moneda directamente
+      facturacionCtrl.setBounds(r.fact.min, r.fact.max, r.fact.step);
+      ticketCtrl.setBounds(r.tick.min, r.tick.max, r.tick.step);
+      facturacionCtrl.set(r.fact.def, { silent:true });
+      ticketCtrl.set(r.tick.def, { silent:true });
+    } else {
+      // cambio de idioma en vivo: convierte lo que el usuario ya haya
+      // cargado en vez de resetear a los valores por defecto
+      var factor = target === 'ars' ? CALC_RATE : (1/CALC_RATE);
+      var newFact = Math.round((facturacionCtrl.get()*factor) / r.fact.step) * r.fact.step;
+      var newTick = Math.round((ticketCtrl.get()*factor) / r.tick.step) * r.tick.step;
+      facturacionCtrl.setBounds(r.fact.min, r.fact.max, r.fact.step);
+      ticketCtrl.setBounds(r.tick.min, r.tick.max, r.tick.step);
+      facturacionCtrl.set(clamp(newFact, r.fact.min, r.fact.max), { silent:true });
+      ticketCtrl.set(clamp(newTick, r.tick.min, r.tick.max), { silent:true });
+    }
+    calcCurrency = target;
+    calcCurPrefix = target === 'ars' ? '$' : 'USD ';
+    var sym = target === 'ars' ? '$' : 'USD';
+    var elF = document.getElementById('calcCurF'), elT = document.getElementById('calcCurT');
+    if(elF) elF.textContent = sym;
+    if(elT) elT.textContent = sym;
+  }
+
+  applyCalcCurrency('es'); // idioma por defecto de la página (este script
+  // corre antes de que el bloque de i18n fije window.currentLang, así que
+  // se pasa el default explícito en vez de leerlo)
+  recalc();
+  window.calcRecalc = function(){
+    applyCalcCurrency(window.currentLang);
+    // Re-render los inputs del stepper también (el separador de miles
+    // cambia con el idioma), no solo los resultados de la derecha.
+    facturacionCtrl.set(facturacionCtrl.get(), { silent:true });
+    ticketCtrl.set(ticketCtrl.get(), { silent:true });
+    pctCtrl.set(pctCtrl.get(), { silent:true });
+    recalc();
+  };
+})();
+</script>
+
+<script>
+// ============ Contacto: fondo de hilos de luz (decorativo, loop 8s) ============
+(function(){
+  var canvas = document.getElementById('contacto-canvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W, H, DPR;
+  var LOOP = 8, TAU = Math.PI*2;
+  function wf(k){ return k*TAU/LOOP; }
+
+  var strands = [];
+  function buildField(){
+    strands = [];
+    var n = Math.max(18, Math.round(W/34));
+    for(var i=0;i<n;i++){
+      strands.push({
+        y0: H*0.15 + Math.random()*H*0.7,
+        amp: 10 + Math.random()*26,
+        freq: wf(1 + Math.floor(Math.random()*2)),
+        phase: Math.random()*TAU,
+        speedK: 1 + Math.floor(Math.random()*2),
+        weight: 0.35 + Math.random()*0.55,
+        w: 0.7 + Math.random()*1.1
+      });
+    }
+  }
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = rect.width; H = rect.height;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    buildField();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var t0 = performance.now();
+
+  function frame(now){
+    var time = reduce ? 0 : ((now - t0)/1000) % LOOP;
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation = 'lighter';
+
+    for(var i=0;i<strands.length;i++){
+      var s = strands[i];
+      ctx.beginPath();
+      var steps = 40;
+      for(var k=0;k<=steps;k++){
+        var x = W*k/steps;
+        var y = s.y0 + Math.sin(x*0.006 + s.phase + time*s.freq*s.speedK) * s.amp;
+        if(k===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      // layered plain strokes instead of shadowBlur (same fix applied to
+      // the Hero/Nichos canvases — shadowBlur per stroke, times many
+      // strands, times three always-on canvases, is what was tanking the
+      // whole page's frame rate)
+      var cAlpha = 0.10*s.weight;
+      ctx.strokeStyle = 'rgba(0,246,223,'+(cAlpha*0.5).toFixed(3)+')';
+      ctx.lineWidth = s.w*2.4;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,246,223,'+cAlpha.toFixed(3)+')';
+      ctx.lineWidth = s.w;
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    if(!reduce && inView) requestAnimationFrame(frame); else running = false;
+  }
+
+  // Same off-screen pause as the Hero/Nichos canvases: Contacto is the
+  // very last section of the page, so this loop used to run at full cost
+  // from the moment the page loaded even though nobody could see it yet.
+  var inView = true, running = true;
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        inView = en.isIntersecting;
+        if(inView && !running){ running = true; requestAnimationFrame(frame); }
+      });
+    }, {rootMargin:'150px'});
+    io.observe(canvas);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+// ============ Idioma: ESP / ENG ============
+window.currentLang = 'es';
+
+window.I18N = {
+  es: {
+    'hero.available': 'Disponible',
+    'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>',
+    'hud.note': '<span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.',
+    'hero.headline': '<span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.',
+    'hero.lead': 'Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.',
+    'hero.cta': 'Conocé mi trabajo <span>&rarr;</span>',
+    'stage.ctrValue': '2,34%',
+    'stage.delta': '+1,12% &#8599;',
+    'stage.rpvValue': '$1,86',
+    'stage.rpvDelta': '+0,34 &#8599;',
+    'stage.hookValue': '41%',
+    'stage.hookDelta': '+3,80% &#8599;',
+    'stage.roasValue': '4,2x',
+    'stage.roasDelta': '+0,6x &#8599;',
+    'annot.a': 'AUDIENCIA<b>CORRECTA</b>',
+    'annot.b': 'CREATIVIDAD<b>QUE CONECTA</b>',
+    'annot.c': 'CONVERSIONES<b>REALES</b>',
+
+    'nichos.tag': '<span class="dot"></span>NICHOS DE TRABAJO<span class="tag-rule"></span>',
+    'nichos.title': 'Diversos nichos,<br>un mismo <em>enfoque.</em>',
+    'nichos.sub': 'Estrategia, creatividad y datos en cada industria.<br>Resultados reales, en cada nicho.',
+
+    'casos.tag': '<span class="dot"></span>CAMPAÑAS Y RESULTADOS<span class="tag-rule"></span>',
+    'casos.title': 'Campañas y<br>resultados <em>reales.</em>',
+    'casos.sub': 'Datos directo del administrador de anuncios.<br>Sin vanity metrics, sin maquillaje.',
+
+    'case1.index': 'Caso · 001', 'case1.title': 'Electrodomésticos',
+    'case1.desc': 'Gestión conjunta de Meta Ads y Google Ads para una marca de electrodomésticos, sosteniendo el volumen de conversiones sin resignar eficiencia de costo por resultado.',
+    'case1.stat1val': '22,35', 'case1.stat1label': 'ROAS promedio (Meta)', 'case1.stat2label': 'Conversiones (Google, jul–ago)',
+
+    'case2.index': 'Caso · 002', 'case2.title': 'Alimentos',
+    'case2.desc': 'Campañas de Meta Ads orientadas a tráfico y reconocimiento para una marca de alimentos, priorizando la construcción de marca por sobre la conversión directa.',
+    'case2.tag3': 'Alcance', 'case2.stat1label': 'Campañas activas', 'case2.stat2label': 'Acciones generadas',
+
+    'case3.index': 'Caso · 003', 'case3.title': 'ONG',
+    'case3.desc': 'Gestión de Meta Ads para una ONG, con foco en captar donaciones a través de campañas de conversión en el sitio.',
+    'case3.tag3': 'Conversión', 'case3.stat1label': 'Donaciones (campaña top)', 'case3.stat2val': '$3.859,78', 'case3.stat2label': 'Costo por donación',
+
+    'case4.index': 'Caso · 004', 'case4.title': 'Agencia de viajes',
+    'case4.desc': 'Gestión de Google Ads para una agencia de viajes, generando conversiones calificadas dentro de un presupuesto acotado.',
+    'case4.tag2': 'Turismo', 'case4.tag3': 'Conversión', 'case4.stat1label': 'Conversiones', 'case4.stat2val': 'USD 17,24', 'case4.stat2label': 'Costo por conversión',
+
+    'casosFail.title': 'También hay campañas<br>que <em>no funcionaron.</em>',
+    'casosFail.sub': 'Y también es parte del proceso.<br>Este es un caso real que no llegó al resultado que el negocio necesitaba.',
+    'case5.index': 'Caso · 005', 'case5.title': 'Congelados', 'case5.badge': 'No alcanzó el objetivo',
+    'case5.desc': 'Campaña de Meta Ads para una marca de congelados. Llegamos a un ROAS de 3,11 y 30 compras, pero no alcanzó para cubrir el margen y la estacionalidad propia de ese rubro: no invertimos el tiempo necesario en entender el negocio al 100% antes de lanzar. Desde este caso, no lanzo ninguna campaña hasta completar un proceso de onboarding a fondo con cada cliente.',
+    'case5.tag2': 'Congelados', 'case5.tag3': 'Aprendizaje',
+    'case5.stat1val': '$1.008.007,61', 'case5.stat1label': 'Inversión',
+    'case5.stat2val': '30', 'case5.stat2label': 'Resultados',
+    'case5.stat3val': '3,11', 'case5.stat3label': 'ROAS',
+    'case5.stat4val': '30', 'case5.stat4label': 'Conversiones',
+
+    'calc.tag': '<span class="dot"></span>CALCULADORA<span class="tag-rule"></span>',
+    'calc.title': 'Planificá con<br><em>señal</em>, no intuición.',
+    'calc.sub': 'Ingresá tus objetivos principales y obtené una proyección<br>en base a los valores que cargues.',
+    'calc.objectives': 'Tus objetivos', 'calc.configure': '<span class="dot"></span>Configurá',
+    'calc.facturacionLabel': 'Facturación deseada', 'calc.perMonth': 'Por mes',
+    'calc.ticketLabel': 'Ticket promedio', 'calc.perSale': 'Por venta',
+    'calc.pctLabel': '% dispuesto a invertir<br>para conseguir un cliente nuevo', 'calc.onMargin': 'Sobre el margen',
+    'calc.note1': 'Ajustá los valores según tu realidad. Los resultados se recalculan automáticamente.',
+    'calc.projection': 'Proyección estimada', 'calc.realtime': '<span class="dot"></span>En tiempo real',
+    'calc.statVentasLabel': 'Ventas estimadas', 'calc.statVentasSub': 'Ventas / mes',
+    'calc.statCacLabel': 'Costo por compra objetivo', 'calc.statCacSub': 'CAC estimado',
+    'calc.statRoasLabel': 'ROAS estimado', 'calc.statRoasSub': 'Retorno de la inversión',
+    'calc.statInversionLabel': 'Inversión mensual estimada', 'calc.statInversionSub': 'En publicidad',
+    'calc.note2': 'Proyección directa según los valores que cargues a la izquierda. El resultado real puede variar según tu mercado, oferta y canal.',
+
+    'contacto.tag': '<span class="dot"></span>CONTACTO<span class="tag-rule"></span>',
+    'contacto.title': 'La IA puede hacer<br>muchas cosas.<br><em>El criterio, no.</em>',
+    'contacto.sub': 'Si querés saber más sobre cómo trabajo,<br>escribime. Con gusto te cuento.',
+    'contacto.copy': '<p>Como publicista digital reconozco que hoy en día la IA está al alcance de todos y las screenshots no bastan para validar mi trabajo.</p><p>Pero si lo que creo que es difícil de copiar es el criterio detrás de cada campaña.</p><p>Si les interesa mi perfil los invito a enviarme un mensaje y con gusto les explico cómo fueron armadas las campañas.</p>',
+    'contacto.annot': 'ESTRATEGIA<br>CREATIVIDAD<br>RESULTADOS REALES',
+    'contacto.bye': '<span class="rule"></span>Gracias por tu tiempo.<br>¡Nos vemos!',
+    'contact.whatsappCta': 'Escribime por WhatsApp',
+    'contact.gmailCta': 'Enviame un email',
+    'contact.linkedinCta': 'Conectemos en LinkedIn',
+    'contact.instagramCta': 'Seguime en Instagram'
+  },
+  en: {
+    'hero.available': 'Available',
+    'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>STRATEGY</span><span class="arrow">&rarr;</span><span>CREATIVE</span><span class="arrow">&rarr;</span><span>RESULTS</span>',
+    'hud.note': '<span class="rule"></span>CONNECTING DATA, AUDIENCES<br>AND CREATIVITY.',
+    'hero.headline': '<span class="line1">Less <span class="glitch" data-text="noise">noise</span>.</span>More <em>results</em> for your brand.',
+    'hero.lead': 'Strategy, data and creativity for<br>your brand to grow in the digital world.',
+    'hero.cta': 'See my work <span>&rarr;</span>',
+    'stage.ctrValue': '2.34%',
+    'stage.delta': '+1.12% &#8599;',
+    'stage.rpvValue': '$1.86',
+    'stage.rpvDelta': '+0.34 &#8599;',
+    'stage.hookValue': '41%',
+    'stage.hookDelta': '+3.80% &#8599;',
+    'stage.roasValue': '4.2x',
+    'stage.roasDelta': '+0.6x &#8599;',
+    'annot.a': 'RIGHT<b>AUDIENCE</b>',
+    'annot.b': 'CREATIVE<b>THAT CONNECTS</b>',
+    'annot.c': 'REAL<b>CONVERSIONS</b>',
+
+    'nichos.tag': '<span class="dot"></span>WORK NICHES<span class="tag-rule"></span>',
+    'nichos.title': 'Different niches,<br>one <em>approach.</em>',
+    'nichos.sub': 'Strategy, creativity and data in every industry.<br>Real results, in every niche.',
+
+    'casos.tag': '<span class="dot"></span>CAMPAIGNS &amp; RESULTS<span class="tag-rule"></span>',
+    'casos.title': 'Campaigns and<br>real <em>results.</em>',
+    'casos.sub': 'Data straight from the ads manager.<br>No vanity metrics, no varnish.',
+
+    'case1.index': 'Case · 001', 'case1.title': 'Home Appliances',
+    'case1.desc': 'Joint management of Meta Ads and Google Ads for a home appliances brand, sustaining conversion volume without sacrificing cost-per-result efficiency.',
+    'case1.stat1val': '22.35', 'case1.stat1label': 'Average ROAS (Meta)', 'case1.stat2label': 'Conversions (Google, Jul–Aug)',
+
+    'case2.index': 'Case · 002', 'case2.title': 'Food',
+    'case2.desc': 'Meta Ads campaigns focused on traffic and awareness for a food brand, prioritizing brand-building over direct conversion.',
+    'case2.tag3': 'Reach', 'case2.stat1label': 'Active campaigns', 'case2.stat2label': 'Actions generated',
+
+    'case3.index': 'Case · 003', 'case3.title': 'NGO',
+    'case3.desc': 'Meta Ads management for an NGO, focused on capturing donations through on-site conversion campaigns.',
+    'case3.tag3': 'Conversion', 'case3.stat1label': 'Donations (top campaign)', 'case3.stat2val': '$3,859.78', 'case3.stat2label': 'Cost per donation',
+
+    'case4.index': 'Case · 004', 'case4.title': 'Travel Agency',
+    'case4.desc': 'Google Ads management for a travel agency, generating qualified conversions within a limited budget.',
+    'case4.tag2': 'Tourism', 'case4.tag3': 'Conversion', 'case4.stat1label': 'Conversions', 'case4.stat2val': 'USD 17.24', 'case4.stat2label': 'Cost per conversion',
+
+    'casosFail.title': 'There are also campaigns<br>that <em>didn&rsquo;t work.</em>',
+    'casosFail.sub': 'That&rsquo;s also part of the process.<br>This is a real case that didn&rsquo;t reach the result the business needed.',
+    'case5.index': 'Case · 005', 'case5.title': 'Frozen Foods', 'case5.badge': 'Missed the goal',
+    'case5.desc': 'Meta Ads campaign for a frozen foods brand. We reached a 3.11 ROAS and 30 purchases, but it wasn&rsquo;t enough to cover that industry&rsquo;s margins and seasonality: we didn&rsquo;t spend enough time understanding the business fully before launching. Since this case, I don&rsquo;t launch any campaign until a thorough onboarding process is completed with each client.',
+    'case5.tag2': 'Frozen Foods', 'case5.tag3': 'Lesson learned',
+    'case5.stat1val': '$1,008,007.61', 'case5.stat1label': 'Investment',
+    'case5.stat2val': '30', 'case5.stat2label': 'Results',
+    'case5.stat3val': '3.11', 'case5.stat3label': 'ROAS',
+    'case5.stat4val': '30', 'case5.stat4label': 'Conversions',
+
+    'calc.tag': '<span class="dot"></span>CALCULATOR<span class="tag-rule"></span>',
+    'calc.title': 'Plan with<br><em>signal</em>, not intuition.',
+    'calc.sub': 'Enter your main goals and get a projection<br>based on the values you enter.',
+    'calc.objectives': 'Your goals', 'calc.configure': '<span class="dot"></span>Configure',
+    'calc.facturacionLabel': 'Desired revenue', 'calc.perMonth': 'Per month',
+    'calc.ticketLabel': 'Average ticket', 'calc.perSale': 'Per sale',
+    'calc.pctLabel': '% willing to invest<br>to acquire a new customer', 'calc.onMargin': 'On margin',
+    'calc.note1': 'Adjust the values to match your reality. Results recalculate automatically.',
+    'calc.projection': 'Estimated projection', 'calc.realtime': '<span class="dot"></span>Real time',
+    'calc.statVentasLabel': 'Estimated sales', 'calc.statVentasSub': 'Sales / month',
+    'calc.statCacLabel': 'Target cost per purchase', 'calc.statCacSub': 'Estimated CAC',
+    'calc.statRoasLabel': 'Estimated ROAS', 'calc.statRoasSub': 'Return on investment',
+    'calc.statInversionLabel': 'Estimated monthly investment', 'calc.statInversionSub': 'In advertising',
+    'calc.note2': 'Direct projection based on the values you enter on the left. Actual results may vary depending on your market, offer and channel.',
+
+    'contacto.tag': '<span class="dot"></span>CONTACT<span class="tag-rule"></span>',
+    'contacto.title': 'AI can do<br>a lot of things.<br><em>Judgment, it can’t.</em>',
+    'contacto.sub': 'If you want to know more about how I work,<br>message me. I’d be glad to tell you.',
+    'contacto.copy': '<p>As a digital advertiser, I recognize that today AI is within everyone’s reach, and screenshots alone aren’t enough to validate my work.</p><p>But what I believe is hard to copy is the judgment behind every campaign.</p><p>If you’re interested in my profile, feel free to send me a message and I’ll gladly walk you through how each campaign was built.</p>',
+    'contacto.annot': 'STRATEGY<br>CREATIVITY<br>REAL RESULTS',
+    'contacto.bye': '<span class="rule"></span>Thanks for your time.<br>See you around!',
+    'contact.whatsappCta': 'Message me on WhatsApp',
+    'contact.gmailCta': 'Send me an email',
+    'contact.linkedinCta': 'Let’s connect on LinkedIn',
+    'contact.instagramCta': 'Follow me on Instagram'
+  }
+};
+
+(function(){
+  function applyLang(lang){
+    window.currentLang = lang;
+    var dict = window.I18N[lang];
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var key = el.getAttribute('data-i18n');
+      if(dict[key] !== undefined) el.innerHTML = dict[key];
+    });
+
+    // Nichos: relabel every rendered niche (4 looped copies of the 7-item set)
+    var labels = document.querySelectorAll('.nicho-label');
+    var data = window.NICHOS_DATA || [];
+    if(data.length){
+      labels.forEach(function(el, i){
+        var n = data[i % data.length];
+        el.textContent = lang === 'en' ? n.name_en : n.name;
+      });
+    }
+
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang-opt').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+
+    if(typeof window.calcRecalc === 'function') window.calcRecalc();
+  }
+  window.applyLang = applyLang;
+
+  document.querySelectorAll('.lang-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      applyLang(btn.getAttribute('data-lang'));
+    });
+  });
+})();
+
+(function(){
+  var bar = document.getElementById('topbar');
+  var hero = document.querySelector('.hero-inner');
+  function sync(){
+    if(!bar) return;
+    var h = bar.offsetHeight;
+    if(hero) hero.style.paddingTop = (h + 24) + 'px';
+    document.documentElement.style.setProperty('--topbar-h', (h + 20) + 'px');
+  }
+  sync();
+  window.addEventListener('resize', sync);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+})();
+</script>
+
+<script>
+// ============ Cursor propio + spotlight (todas las secciones) ============
+// Reemplaza la flechita del sistema por un punto propio con un halo suave
+// que ilumina el fondo alrededor del mouse, como en thomaslehmann.media
+// (pedido explícito de Pablo, 2026-09-13) — solo el patrón de interacción,
+// look/paleta propios (cian de la marca). Solo se activa con mouse real
+// (pointer:fine) y sin prefers-reduced-motion; en touch o con esa
+// preferencia el cursor del sistema queda como estaba.
+(function(){
+  var fine = window.matchMedia && window.matchMedia('(pointer:fine)').matches;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!fine || reduce) return;
+
+  var dot = document.getElementById('cursorDot');
+  var glow = document.getElementById('cursorGlow');
+  if(!dot || !glow) return;
+
+  document.body.classList.add('has-custom-cursor');
+
+  var mx = -9999, my = -9999;      // posición real del mouse (el punto la sigue 1:1)
+  var gx = -9999, gy = -9999;      // posición del halo (con inercia, va detrás)
+  var active = false;
+  var HOVER_SEL = 'a, button, input, textarea, [role="button"], .lang-opt, .nicho, .case-header, .arrows button, .contact-card, .lightbox-close, .calc-slider';
+
+  function onMove(e){
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = 'translate3d('+mx+'px,'+my+'px,0) translate(-50%,-50%)';
+    if(!active){
+      // primer movimiento: el halo arranca ya en la posición del mouse en
+      // vez de "volar" desde fuera de pantalla (-9999) con inercia — eso
+      // se vería como una luz cruzando toda la página antes de asentarse.
+      gx = mx; gy = my;
+      active = true; dot.classList.add('is-active'); glow.classList.add('is-active');
+    }
+
+    var el = document.elementFromPoint(mx, my);
+    var hovering = el && el.closest(HOVER_SEL);
+    dot.classList.toggle('is-hover', !!hovering);
+  }
+  function onLeave(){
+    active = false;
+    dot.classList.remove('is-active');
+    glow.classList.remove('is-active');
+  }
+
+  document.addEventListener('mousemove', onMove, { passive:true });
+  document.documentElement.addEventListener('mouseleave', onLeave);
+  window.addEventListener('blur', onLeave);
+
+  // El halo persigue al mouse con una leve inercia (lerp) — el punto es
+  // instantáneo, el halo va un paso atrás, que es lo que da la sensación
+  // de "luz" en vez de un elemento más pegado 1:1 al cursor.
+  function frame(){
+    gx += (mx - gx) * 0.14;
+    gy += (my - gy) * 0.14;
+    glow.style.transform = 'translate3d('+gx+'px,'+gy+'px,0) translate(-50%,-50%)';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+
+</body></html>
