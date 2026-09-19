@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>pablocasco.ads — hero</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@1&display=swap');
@@ -67,7 +67,6 @@
     padding:112px 40px 0;
     min-height:100vh;
   }
-  @media (max-width:380px){ .hero-inner{ padding-left:22px; padding-right:22px; } }
 
   /* ---------- Sticky top bar ---------- */
   .topbar{
@@ -145,7 +144,6 @@
     font-size:clamp(40px, 6.6vw, 118px); line-height:1.02; color:var(--white); margin:0;
   }
   h1.headline .line1{ display:block; white-space:nowrap; }
-  @media (max-width:340px){ h1.headline .line1{ white-space:normal; } }
   h1.headline em{
     font-style:normal; font-weight:800;
     background:linear-gradient(100deg, #7dffe0, #00e9c9);
@@ -286,6 +284,78 @@
   @media (max-width:600px){ .stage{ display:none; } }
 
   @media (prefers-reduced-motion: reduce){ .dot.live{ animation:none; } }
+
+  /* ================= Sobre mí section ================= */
+  .about{ position:relative; background:var(--bg); padding:108px 0 112px; }
+  .about-inner{
+    max-width:1864px; margin:0 auto; padding:0 40px;
+    display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:center;
+  }
+  @media (max-width:960px){ .about-inner{ grid-template-columns:1fr; gap:48px; } }
+
+  h2.about-title{
+    font-family:var(--font-sans); font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(34px, 4.6vw, 64px); line-height:1.04; color:var(--white); margin:0 0 24px;
+  }
+  h2.about-title em{
+    font-style:italic; font-family:var(--font-script); font-weight:400;
+    background:linear-gradient(100deg, #7dffe0, #00e9c9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 14px rgba(0,246,223,.35));
+  }
+  p.about-text{
+    font-family:var(--font-sans); font-size:16px; line-height:1.75; color:#c7cfd3;
+    margin:0 0 32px; max-width:520px;
+  }
+
+  .about-credential{
+    display:flex; align-items:center; gap:18px;
+    border:1px solid var(--border); border-radius:16px; padding:20px 22px;
+    background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+    max-width:460px;
+    transition:transform .28s cubic-bezier(.2,.8,.2,1), border-color .28s ease, box-shadow .28s ease, background .28s ease;
+    transform-origin:left center;
+  }
+  .about-credential:hover{
+    transform:scale(1.045);
+    border-color:rgba(0,246,223,.45);
+    background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+    box-shadow:0 18px 44px rgba(0,246,223,.14), 0 0 0 1px rgba(0,246,223,.08);
+  }
+  .about-credential-icon{
+    flex-shrink:0; width:48px; height:48px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    border:1.4px solid rgba(0,246,223,.45); background:rgba(0,246,223,.06);
+    color:var(--cyan);
+  }
+  .about-credential-icon svg{ width:24px; height:24px; }
+  .about-credential-text strong{
+    display:block; font-family:var(--font-sans); font-weight:700; font-size:15px;
+    line-height:1.4; color:var(--white); margin-bottom:6px;
+  }
+  .about-credential-text span{
+    display:block; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--dim);
+  }
+
+  .about-cert{ position:relative; }
+  /* Compound selector (.shot-thumb.about-cert-thumb) so these overrides beat the
+     base .shot-thumb rules (defined later, in the Casos section) regardless of
+     source order — same specificity trap documented in the Casos mobile fix. */
+  .shot-thumb.about-cert-thumb{
+    display:block; width:100%; max-width:none; flex:none; border-radius:16px;
+    transition:border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+  .shot-thumb.about-cert-thumb:hover{
+    border-color:rgba(0,246,223,.5); transform:translateY(-3px);
+    box-shadow:0 0 0 1px rgba(0,246,223,.1), 0 20px 50px rgba(0,246,223,.12);
+  }
+  .about-cert-note{
+    display:flex; align-items:flex-start; gap:9px; margin:16px 4px 0;
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.04em; line-height:1.6;
+    color:var(--dim);
+  }
+  .about-cert-note span{ flex-shrink:0; opacity:.8; }
 
   /* ================= Nichos section ================= */
   /* No overflow:hidden here on purpose: the page-level html,body{overflow-x:hidden}
@@ -770,7 +840,7 @@
 
     <div class="hero-copy">
       <h1 class="headline" data-i18n="hero.headline"><span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.</h1>
-      <p class="lead" data-i18n="hero.lead">En un mar de datos, no necesitás más métricas;<br>necesitás filtrar el ruido y mirar lo correcto que te hace avanzar.</p>
+      <p class="lead" data-i18n="hero.lead">Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.</p>
       <a class="cta" href="#casos" data-i18n="hero.cta">Conocé mi trabajo <span>&rarr;</span></a>
     </div>
   </div>
@@ -796,10 +866,48 @@
       <div class="val" data-i18n="stage.roasValue">4,2x</div>
       <div class="delta" data-i18n="stage.roasDelta">+0,6x &#8599;</div>
     </div>
+    <div class="plat-list">
+      <div class="on"><span class="bar"></span>META ADS</div>
+      <div><span class="bar"></span>GOOGLE ADS</div>
+      <div><span class="bar"></span>LINKEDIN ADS</div>
+      <div><span class="bar"></span>X ADS</div>
+    </div>
     <div class="annot a" id="annot-a" data-i18n="annot.a">AUDIENCIA<b>CORRECTA</b></div>
     <div class="annot b" id="annot-b" data-i18n="annot.b">CREATIVIDAD<b>QUE CONECTA</b></div>
     <div class="annot c" id="annot-c" data-i18n="annot.c">CONVERSIONES<b>REALES</b></div>
     <div class="coords"><span>&#8853;</span> -34.6037&deg;&nbsp;&nbsp;-58.3816&deg;</div>
+  </div>
+</section>
+
+<section class="about" id="sobre-mi">
+  <div class="about-inner">
+    <div class="about-copy">
+      <span class="section-tag" data-i18n="about.tag"><span class="dot"></span>MI FORMACIÓN<span class="tag-rule"></span></span>
+      <h2 class="about-title" data-i18n="about.title">Sobre <em>mí.</em></h2>
+      <p class="about-text" data-i18n="about.text">Me llamo Pablo Casco, tengo 24 años y soy especialista en publicidad digital. En 2026 finalicé la diplomatura en Publicidad en el centro de e-Learning de la UTN y hasta el día de hoy sigo capacitándome para convertirme en un marketer 360.</p>
+
+      <div class="about-credential">
+        <div class="about-credential-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3 2 8l10 5 10-5-10-5Z"/>
+            <path d="M6 10.5V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-5.5"/>
+            <path d="M22 8v6"/>
+          </svg>
+        </div>
+        <div class="about-credential-text">
+          <strong data-i18n="about.credTitle">Diplomatura de Trafficker Digital y Publicidad</strong>
+          <span data-i18n="about.credOrg">UTN · Centro de e-Learning · 270 hs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-cert">
+      <button class="shot-thumb about-cert-thumb" data-full="images/certificado-utn.png" aria-label="Ver certificado en alta calidad">
+        <img src="images/certificado-utn.png" alt="Certificado de la Diplomatura de Trafficker Digital y Publicidad, UTN" loading="lazy">
+        <span class="shot-thumb-zoom">&#8599;</span>
+      </button>
+      <p class="about-cert-note" data-i18n="about.certNote"><span>&#128065;</span> La parte tapada corresponde a mi DNI, por motivos de seguridad.</p>
+    </div>
   </div>
 </section>
 
@@ -820,7 +928,7 @@
   <div class="casos-head">
     <span class="section-tag" data-i18n="casos.tag"><span class="dot"></span>CAMPAÑAS Y RESULTADOS<span class="tag-rule"></span></span>
     <h2 class="casos-title" data-i18n="casos.title">Campañas y<br>resultados <em>reales.</em></h2>
-    <p class="casos-sub" data-i18n="casos.sub">Datos directo del administrador de anuncios.<br>Sin vanity metrics, sin maquillaje.</p>
+    <p class="casos-sub" data-i18n="casos.sub">Datos directo del administrador de anuncios.</p>
   </div>
 
   <div class="casos-grid">
@@ -1100,6 +1208,10 @@
 <section class="contacto" id="contacto">
   <canvas id="contacto-canvas"></canvas>
 
+  <div class="contacto-annot" data-i18n="contacto.annot">
+    ESTRATEGIA<br>CREATIVIDAD<br>RESULTADOS REALES
+  </div>
+
   <div class="contacto-inner">
     <span class="section-tag" data-i18n="contacto.tag"><span class="dot"></span>CONTACTO<span class="tag-rule"></span></span>
 
@@ -1196,7 +1308,6 @@ window.NICHOS_DATA = [
   var hero = document.querySelector('.hero');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var W,H,DPR,t0=performance.now();
-  var lastDraw = 0, MIN_FRAME_MS = 23; // caps hero canvas redraws at ~43fps to cut CPU/GPU cost; timing math below is elapsed-time based, not frame-count based, so this never affects the loop's visual speed
 
   // ---- perfect-loop time base --------------------------------------------
   // Everything time-dependent is driven off `time`, which is wrapped to
@@ -1210,7 +1321,7 @@ window.NICHOS_DATA = [
   function wf(k){ return k*TAU/LOOP; }
 
   function resize(){
-    DPR = Math.min(window.devicePixelRatio||1, 1.5);
+    DPR = Math.min(window.devicePixelRatio||1, 2);
     W = hero.clientWidth; H = hero.clientHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
@@ -1280,14 +1391,14 @@ window.NICHOS_DATA = [
     // rather than a technical wireframe. backStrands sit wider + dimmer +
     // blurred, which is what makes a second band visibly cross under the
     // main one where the curve bends.
-    mainStrands = []; for(var i=0;i<68;i++) mainStrands.push(makeStrand(1));
-    backStrands = []; for(var j=0;j<18;j++) backStrands.push(makeStrand(1.5));
+    mainStrands = []; for(var i=0;i<105;i++) mainStrands.push(makeStrand(1));
+    backStrands = []; for(var j=0;j<30;j++) backStrands.push(makeStrand(1.5));
 
     // motes: tiny points of light that visibly travel along the wave,
     // left -> right, each doing an exact integer number of full sweeps
     // per LOOP so their trail position matches perfectly at the seam.
     motes = [];
-    var mn = Math.round((W*H)/4200);
+    var mn = Math.round((W*H)/2600);
     for(var m=0;m<mn;m++){
       motes.push({
         x0: Math.random()*W,
@@ -1303,7 +1414,7 @@ window.NICHOS_DATA = [
     // body with a larger, slower perpendicular excursion + its own gentle
     // horizontal creep, reading as depth (things floating in front/behind).
     detached = [];
-    var dn = Math.round((W*H)/13000);
+    var dn = Math.round((W*H)/8500);
     for(var d=0;d<dn;d++){
       detached.push({
         x0:Math.random()*W,
@@ -1321,7 +1432,7 @@ window.NICHOS_DATA = [
     // WHOLE canvas (not tied to the wave curve at all) — the reference has
     // fine bright specks well outside the ribbon body, like a night sky.
     stars = [];
-    var sn = Math.round((W*H)/12000);
+    var sn = Math.round((W*H)/8000);
     for(var st=0; st<sn; st++){
       stars.push({
         x: Math.random()*W,
@@ -1348,11 +1459,6 @@ window.NICHOS_DATA = [
   }
 
   function frame(now){
-    if(now - lastDraw < MIN_FRAME_MS){
-      if(!reduce && inView) requestAnimationFrame(frame); else running = false;
-      return;
-    }
-    lastDraw = now;
     var traw = (now-t0)/1000;
     var time = traw % LOOP;
     ctx.clearRect(0,0,W,H);
@@ -1498,7 +1604,8 @@ window.NICHOS_DATA = [
       var ad = (0.10+0.32*envd)*faded*twd*breathe*(q.front?1.3:0.7);
       ctx.beginPath(); ctx.arc(dx2,dy,q.r*(q.front?1.15:0.85),0,TAU);
       ctx.fillStyle='rgba(190,255,242,'+Math.min(0.85,ad).toFixed(3)+')';
-      ctx.fill();
+      if(q.front){ ctx.shadowBlur=5; ctx.shadowColor='rgba(120,255,235,.8)'; ctx.fill(); ctx.shadowBlur=0; }
+      else { ctx.fill(); }
     }
 
     // leader lines to the fixed annotation callouts (static UI, no animation)
@@ -2107,7 +2214,7 @@ window.I18N = {
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>',
     'hud.note': '<span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.',
     'hero.headline': '<span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.',
-    'hero.lead': 'En un mar de datos, no necesitás más métricas;<br>necesitás filtrar el ruido y mirar lo correcto que te hace avanzar.',
+    'hero.lead': 'Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.',
     'hero.cta': 'Conocé mi trabajo <span>&rarr;</span>',
     'stage.ctrValue': '2,34%',
     'stage.delta': '+1,12% &#8599;',
@@ -2121,13 +2228,20 @@ window.I18N = {
     'annot.b': 'CREATIVIDAD<b>QUE CONECTA</b>',
     'annot.c': 'CONVERSIONES<b>REALES</b>',
 
+    'about.tag': '<span class="dot"></span>MI FORMACIÓN<span class="tag-rule"></span>',
+    'about.title': 'Sobre <em>mí.</em>',
+    'about.text': 'Me llamo Pablo Casco, tengo 24 años y soy especialista en publicidad digital. En 2026 finalicé la diplomatura en Publicidad en el centro de e-Learning de la UTN y hasta el día de hoy sigo capacitándome para convertirme en un marketer 360.',
+    'about.credTitle': 'Diplomatura de Trafficker Digital y Publicidad',
+    'about.credOrg': 'UTN · Centro de e-Learning · 270 hs',
+    'about.certNote': '<span>&#128065;</span> La parte tapada corresponde a mi DNI, por motivos de seguridad.',
+
     'nichos.tag': '<span class="dot"></span>NICHOS DE TRABAJO<span class="tag-rule"></span>',
     'nichos.title': 'Diversos nichos,<br>un mismo <em>enfoque.</em>',
     'nichos.sub': 'Estrategia, creatividad y datos en cada industria.<br>Resultados reales, en cada nicho.',
 
     'casos.tag': '<span class="dot"></span>CAMPAÑAS Y RESULTADOS<span class="tag-rule"></span>',
     'casos.title': 'Campañas y<br>resultados <em>reales.</em>',
-    'casos.sub': 'Datos directo del administrador de anuncios.<br>Sin vanity metrics, sin maquillaje.',
+    'casos.sub': 'Datos directo del administrador de anuncios.',
 
     'case1.index': 'Caso · 001', 'case1.title': 'Electrodomésticos',
     'case1.desc': 'Gestión conjunta de Meta Ads y Google Ads para una marca de electrodomésticos, sosteniendo el volumen de conversiones sin resignar eficiencia de costo por resultado.',
@@ -2186,7 +2300,7 @@ window.I18N = {
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>STRATEGY</span><span class="arrow">&rarr;</span><span>CREATIVE</span><span class="arrow">&rarr;</span><span>RESULTS</span>',
     'hud.note': '<span class="rule"></span>CONNECTING DATA, AUDIENCES<br>AND CREATIVITY.',
     'hero.headline': '<span class="line1">Less <span class="glitch" data-text="noise">noise</span>.</span>More <em>results</em> for your brand.',
-    'hero.lead': 'In a sea of data, you don&rsquo;t need more metrics;<br>you need to filter the noise and focus on what moves you forward.',
+    'hero.lead': 'Strategy, data and creativity for<br>your brand to grow in the digital world.',
     'hero.cta': 'See my work <span>&rarr;</span>',
     'stage.ctrValue': '2.34%',
     'stage.delta': '+1.12% &#8599;',
@@ -2200,13 +2314,20 @@ window.I18N = {
     'annot.b': 'CREATIVE<b>THAT CONNECTS</b>',
     'annot.c': 'REAL<b>CONVERSIONS</b>',
 
+    'about.tag': '<span class="dot"></span>MY BACKGROUND<span class="tag-rule"></span>',
+    'about.title': 'About <em>me.</em>',
+    'about.text': 'My name is Pablo Casco, I&rsquo;m 24 years old and I specialize in digital advertising. In 2026 I completed the Advertising diploma at UTN&rsquo;s e-Learning center, and to this day I keep training to become a well-rounded marketer.',
+    'about.credTitle': 'Diploma in Digital Trafficking &amp; Advertising',
+    'about.credOrg': 'UTN · e-Learning Center · 270 hs',
+    'about.certNote': '<span>&#128065;</span> The blurred part is my national ID number, for security reasons.',
+
     'nichos.tag': '<span class="dot"></span>WORK NICHES<span class="tag-rule"></span>',
     'nichos.title': 'Different niches,<br>one <em>approach.</em>',
     'nichos.sub': 'Strategy, creativity and data in every industry.<br>Real results, in every niche.',
 
     'casos.tag': '<span class="dot"></span>CAMPAIGNS &amp; RESULTS<span class="tag-rule"></span>',
     'casos.title': 'Campaigns and<br>real <em>results.</em>',
-    'casos.sub': 'Data straight from the ads manager.<br>No vanity metrics, no varnish.',
+    'casos.sub': 'Data straight from the ads manager.',
 
     'case1.index': 'Case · 001', 'case1.title': 'Home Appliances',
     'case1.desc': 'Joint management of Meta Ads and Google Ads for a home appliances brand, sustaining conversion volume without sacrificing cost-per-result efficiency.',
