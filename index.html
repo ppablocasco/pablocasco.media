@@ -17,7 +17,10 @@
   }
   *{box-sizing:border-box;}
   html{ scroll-behavior:smooth; scroll-padding-top:var(--topbar-h, 110px); }
-  html,body{margin:0; padding:0; background:var(--bg); overflow-x:hidden;}
+  /* overflow-x:hidden convierte al body en contenedor de scroll y rompe position:sticky.
+     overflow-x:clip recorta igual sin crear scrollport. Se deja hidden como fallback
+     para navegadores viejos que no soportan clip (ahí el rail de Casos no se activa). */
+  html,body{margin:0; padding:0; background:var(--bg); overflow-x:hidden; overflow-x:clip;}
   body{ font-family:var(--font-sans); color:var(--white); -webkit-font-smoothing:antialiased; }
 
   /* ---------- Custom cursor + spotlight (todas las secciones, todas
@@ -453,6 +456,110 @@
     display:grid; grid-template-columns:1fr 1fr; gap:24px;
   }
   @media (max-width:960px){ .casos-grid{ grid-template-columns:1fr; } }
+
+  /* ---- Rail horizontal: el scroll vertical nativo desplaza las tarjetas en horizontal.
+         Sin scroll-jacking: nunca se intercepta el scroll del usuario, solo se lee.
+         Solo desktop/tablet (>=961px) y si el usuario no pidió menos movimiento.
+         Fuera de esa condición, .casos-rail/.casos-viewport son divs sin estilo
+         y la sección se ve exactamente como antes (grid + acordeón). ---- */
+  .casos-prog{ display:none; }
+
+  @supports (overflow-x: clip){
+  @media (min-width:961px) and (prefers-reduced-motion:no-preference){
+    /* Margen lateral compartido: alinea encabezado, pista e indicador en la misma
+       columna izquierda que usa el resto de la página (max-width 1864 + 40px). */
+    .casos-rail.is-rail{ position:relative; --casos-inset:max(40px, calc((100vw - 1864px) / 2 + 40px)); }
+    .casos-rail.is-rail .casos-viewport{
+      position:sticky; top:var(--topbar-h, 110px);
+      height:calc(100vh - var(--topbar-h, 110px));
+      display:flex; flex-direction:column; justify-content:center;
+      overflow:hidden;
+    }
+    .casos-rail.is-rail .casos-head{
+      flex:0 0 auto; width:100%; max-width:none;
+      margin:0 0 clamp(14px, 2.4vh, 30px); padding:0 var(--casos-inset);
+    }
+    .casos-rail.is-rail h2.casos-title{
+      margin-bottom:10px; font-size:clamp(30px, 3.1vw, 48px); line-height:1.06;
+    }
+    .casos-rail.is-rail .casos-head .section-tag{ margin-bottom:12px; }
+    .casos-rail.is-rail p.casos-sub{ font-size:13px; }
+
+    .casos-rail.is-rail .casos-grid{
+      display:flex; align-self:flex-start; width:max-content;
+      grid-template-columns:none; margin:0; gap:28px;
+      padding-left:var(--casos-inset); padding-right:var(--casos-inset);
+      will-change:transform;
+    }
+    .casos-rail.is-rail .case-card{
+      flex:0 0 min(620px, 46vw);
+      display:flex; flex-direction:column;
+    }
+    /* Tarjetas siempre abiertas: sin click, el caso completo se ve de una */
+    .casos-rail.is-rail .case-body-wrap{ grid-template-rows:1fr; transition:none; }
+    .casos-rail.is-rail .case-header{ cursor:default; padding-bottom:18px; }
+    .casos-rail.is-rail .case-chevron{ display:none; }
+    .casos-rail.is-rail .case-body{ padding-bottom:26px; }
+    .casos-rail.is-rail .case-desc{ margin-bottom:16px; }
+    .casos-rail.is-rail .case-tags{ margin-bottom:18px; }
+    .casos-rail.is-rail .case-stats{ margin-bottom:20px; }
+    .casos-rail.is-rail .case-shots{ margin-top:auto; }
+    .casos-rail.is-rail .shot-thumb{ max-width:none; flex:1 1 0; max-height:clamp(104px, 19vh, 200px); }
+    .casos-rail.is-rail .shot-thumb img{ height:100%; object-fit:cover; object-position:top left; }
+
+    /* Indicador de avance: segmentos (uno por caso) + nombre del caso activo */
+    .casos-rail.is-rail .casos-prog{
+      display:flex; align-items:center; gap:18px; flex:0 0 auto;
+      margin-top:clamp(14px, 2.6vh, 34px);
+      padding-left:var(--casos-inset); padding-right:var(--casos-inset);
+    }
+    .casos-prog-segs{ display:flex; gap:7px; }
+    .casos-prog-seg{
+      position:relative; width:54px; height:2px; border-radius:2px;
+      background:rgba(255,255,255,.14); overflow:hidden;
+    }
+    .casos-prog-seg i{
+      position:absolute; inset:0; transform-origin:left center; transform:scaleX(0);
+      background:linear-gradient(90deg, var(--cyan), var(--violet));
+      box-shadow:0 0 10px rgba(0,246,223,.45);
+    }
+    .casos-prog-name{
+      font-family:var(--font-mono); font-size:11.5px; letter-spacing:.11em;
+      text-transform:uppercase; color:var(--gray); white-space:nowrap;
+    }
+    .casos-prog-name b{ color:#eafffb; font-weight:400; }
+
+    /* Modo compacto: notebooks de poca altura (1280x600, 1366x640...).
+       Sin esto el encabezado y el indicador se recortan contra los bordes
+       del viewport pegajoso. */
+    @media (max-height:860px){
+      .casos-rail.is-rail .casos-head{ margin-bottom:clamp(10px, 1.8vh, 20px); }
+      .casos-rail.is-rail h2.casos-title{ font-size:clamp(26px, 2.5vw, 38px); margin-bottom:6px; }
+      .casos-rail.is-rail .casos-head .section-tag{ margin-bottom:8px; }
+      .casos-rail.is-rail p.casos-sub{ font-size:12px; }
+      .casos-rail.is-rail .case-header{ padding:18px 24px 12px; }
+      .casos-rail.is-rail .case-title{ font-size:22px; }
+      .casos-rail.is-rail .case-body{ padding:0 24px 18px; }
+      .casos-rail.is-rail .case-desc{ font-size:14px; line-height:1.55; margin-bottom:12px; }
+      .casos-rail.is-rail .case-tags{ margin-bottom:12px; }
+      .casos-rail.is-rail .case-stats{ padding-top:14px; margin-bottom:14px; gap:28px; }
+      .casos-rail.is-rail .case-stats div strong{ font-size:22px; }
+      .casos-rail.is-rail .casos-prog{ margin-top:clamp(10px, 1.6vh, 20px); }
+    }
+    @media (max-height:700px){
+      .casos-rail.is-rail p.casos-sub{ display:none; }
+      .casos-rail.is-rail .case-desc{
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+        overflow:hidden; margin-bottom:10px;
+      }
+      .casos-rail.is-rail .case-tags{ margin-bottom:10px; }
+      .casos-rail.is-rail .case-stats{ padding-top:12px; margin-bottom:12px; }
+      .casos-rail.is-rail .case-header{ padding:16px 24px 10px; }
+      .casos-rail.is-rail .case-body{ padding:0 24px 16px; }
+      .casos-rail.is-rail .shot-thumb{ max-height:clamp(88px, 16vh, 150px); }
+    }
+  }
+  }
 
   .casos-fail{ max-width:1864px; margin:96px auto 0; padding:0 40px; }
   h3.casos-fail-title{
@@ -925,6 +1032,8 @@
 </section>
 
 <section class="casos" id="casos">
+ <div class="casos-rail">
+  <div class="casos-viewport">
   <div class="casos-head">
     <span class="section-tag" data-i18n="casos.tag"><span class="dot"></span>CAMPAÑAS Y RESULTADOS<span class="tag-rule"></span></span>
     <h2 class="casos-title" data-i18n="casos.title">Campañas y<br>resultados <em>reales.</em></h2>
@@ -1059,6 +1168,19 @@
     </div>
 
   </div>
+
+  <div class="casos-prog" aria-hidden="true">
+    <span class="casos-prog-segs">
+      <span class="casos-prog-seg"><i></i></span>
+      <span class="casos-prog-seg"><i></i></span>
+      <span class="casos-prog-seg"><i></i></span>
+      <span class="casos-prog-seg"><i></i></span>
+    </span>
+    <span class="casos-prog-name"><b></b></span>
+  </div>
+
+  </div>
+ </div>
 
   <div class="casos-fail">
     <h3 class="casos-fail-title" data-i18n="casosFail.title">También hay campañas<br>que <em>no funcionaron.</em></h3>
@@ -1931,6 +2053,8 @@ window.NICHOS_DATA = [
   cards.forEach(function(card){
     var btn = card.querySelector('.case-header');
     btn.addEventListener('click', function(){
+      // En modo rail las tarjetas ya están abiertas: el header no togglea nada.
+      if(card.closest('.casos-rail.is-rail')) return;
       var willOpen = !card.classList.contains('open');
       card.classList.toggle('open', willOpen);
       btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
@@ -1966,6 +2090,153 @@ window.NICHOS_DATA = [
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape') closeLightbox();
   });
+})();
+</script>
+
+<script>
+// ============ Casos: rail horizontal manejado por scroll nativo ============
+// El scroll vertical del usuario NUNCA se intercepta (nada de preventDefault ni
+// de wheel handlers): solo se lee la posición del rail y se traduce la pista.
+// Lectura y escritura coalescidas en un solo requestAnimationFrame, y el loop
+// solo corre mientras la sección está cerca del viewport.
+(function(){
+  var rail = document.querySelector('.casos-rail');
+  if(!rail) return;
+  var viewport = rail.querySelector('.casos-viewport');
+  var track = rail.querySelector('.casos-grid');
+  var head = rail.querySelector('.casos-head');
+  var prog = rail.querySelector('.casos-prog');
+  var cards = track ? track.querySelectorAll('.case-card') : [];
+  var segs  = rail.querySelectorAll('.casos-prog-seg i');
+  var nameEl = rail.querySelector('.casos-prog-name b');
+  if(!viewport || !track || !cards.length) return;
+
+  var mqSize = window.matchMedia('(min-width:961px)');
+  var mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  var active = false, total = 0, stickyTop = 0;
+  var inView = false, queued = false, lastX = -1, lastIdx = -1;
+
+  var titles = Array.prototype.map.call(cards, function(c){
+    var t = c.querySelector('.case-title');
+    return t ? t.textContent.trim() : '';
+  });
+
+  // Sin overflow-x:clip, el overflow-x:hidden del body rompe position:sticky:
+  // en ese caso no se activa el rail y la sección queda como grid + acordeón.
+  var supportsClip = window.CSS && CSS.supports && CSS.supports('overflow-x','clip');
+
+  function shouldActivate(){ return supportsClip && mqSize.matches && !mqMotion.matches; }
+
+  function px(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+  // Alto real del contenido del viewport pegajoso (encabezado + pista + indicador).
+  function contentHeight(){
+    var h = track.offsetHeight;
+    if(head) h += head.offsetHeight + px(getComputedStyle(head).marginBottom);
+    if(prog) h += prog.offsetHeight + px(getComputedStyle(prog).marginTop);
+    return h;
+  }
+
+  function setActive(want){
+    if(want === active) return;
+    active = want;
+    rail.classList.toggle('is-rail', active);
+    cards.forEach(function(c){
+      var btn = c.querySelector('.case-header');
+      if(!btn) return;
+      if(active){
+        c.classList.remove('open');
+        btn.setAttribute('aria-expanded','true');
+        btn.setAttribute('tabindex','-1');
+      }else{
+        btn.setAttribute('aria-expanded','false');
+        btn.removeAttribute('tabindex');
+      }
+    });
+  }
+
+  function measure(){
+    setActive(shouldActivate());
+
+    if(active){
+      // Red de seguridad: si el caso completo no entra en el alto disponible,
+      // el rail recortaría contenido. En ese caso se apaga y la sección vuelve
+      // al grid + acordeón de siempre, que funciona en cualquier pantalla.
+      track.style.transform = 'translate3d(0,0,0)';
+      if(contentHeight() > viewport.clientHeight + 1) setActive(false);
+    }
+
+    if(!active){
+      rail.style.height = '';
+      track.style.transform = '';
+      lastX = -1; lastIdx = -1;
+      return;
+    }
+    // Medir con la pista en reposo para que scrollWidth sea estable.
+    stickyTop = parseFloat(getComputedStyle(viewport).top) || 0;
+    total = Math.max(0, track.scrollWidth - viewport.clientWidth);
+    rail.style.height = (viewport.clientHeight + total) + 'px';
+    lastX = -1; lastIdx = -1;
+    apply();
+  }
+
+  function apply(){
+    var x = stickyTop - rail.getBoundingClientRect().top;
+    if(x < 0) x = 0; else if(x > total) x = total;
+    if(Math.abs(x - lastX) < 0.5) return;
+    lastX = x;
+    track.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
+
+    var n = segs.length;
+    if(!n) return;
+    var p = total > 0 ? x / total : 0;
+    var scaled = p * n;
+    for(var i = 0; i < n; i++){
+      var f = scaled - i;
+      f = f < 0 ? 0 : (f > 1 ? 1 : f);
+      segs[i].style.transform = 'scaleX(' + f + ')';
+    }
+    var idx = Math.min(n - 1, Math.floor(scaled - 1e-6 < 0 ? 0 : scaled - 1e-6));
+    if(idx !== lastIdx){
+      lastIdx = idx;
+      if(nameEl) nameEl.textContent = titles[idx] || '';
+    }
+  }
+
+  function onScroll(){
+    if(!active || !inView || queued) return;
+    queued = true;
+    requestAnimationFrame(function(){ queued = false; apply(); });
+  }
+
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        inView = en.isIntersecting;
+        if(inView) onScroll();
+      });
+    }, {rootMargin:'200px'}).observe(rail);
+  }else{
+    inView = true;
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  var rAFResize = 0;
+  function onResize(){
+    cancelAnimationFrame(rAFResize);
+    rAFResize = requestAnimationFrame(measure);
+  }
+  window.addEventListener('resize', onResize);
+  if(mqSize.addEventListener) mqSize.addEventListener('change', onResize);
+  if(mqMotion.addEventListener) mqMotion.addEventListener('change', onResize);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(onResize);
+  window.addEventListener('load', onResize);
+  // El toggle ESP/ENG cambia el largo de los textos -> re-medir.
+  document.addEventListener('langchange', onResize);
+
+  measure();
 })();
 </script>
 
@@ -2408,6 +2679,8 @@ window.I18N = {
     });
 
     if(typeof window.calcRecalc === 'function') window.calcRecalc();
+    // Avisar a quien dependa del largo de los textos (rail de Casos re-mide).
+    document.dispatchEvent(new CustomEvent('langchange', {detail:{lang:lang}}));
   }
   window.applyLang = applyLang;
 
