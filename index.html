@@ -133,11 +133,6 @@
     border:1px solid var(--border); border-radius:999px; padding:15px 26px;
   }
   .hud-pill .arrow{ color:var(--dim); margin:0 2px; }
-  .hud-note{
-    display:flex; align-items:flex-start; gap:12px; padding-top:16px;
-    font-family:var(--font-mono); font-size:13.5px; color:var(--gray); letter-spacing:.02em; line-height:1.55;
-  }
-  .hud-note .rule{ width:24px; height:1px; background:var(--dim); margin-top:9px; flex-shrink:0; }
 
   /* ---------- Headline / lead / CTA ---------- */
   .hero-copy{ position:relative; margin-top:44px; max-width:1460px; }
@@ -934,18 +929,12 @@
   <canvas id="hero-canvas"></canvas>
   <div class="hero-vignette"></div>
 
-  <svg viewBox="0 0 26 230" style="position:absolute; left:45.4%; top:23%; width:16px; height:150px; opacity:.09; filter:blur(.4px); z-index:1; pointer-events:none;">
-    <polygon points="9,0 17,0 17,14 9,14" fill="#fff"/>
-    <polygon points="6,14 20,14 22,210 4,210" fill="#fff"/>
-  </svg>
-
   <div class="hero-inner">
     <div class="hud-row">
       <div class="hud-pill" data-i18n="hud.pill">
         <span class="dot"></span>
         <span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>
       </div>
-      <div class="hud-note" data-i18n="hud.note"><span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.</div>
     </div>
 
     <div class="hero-copy">
@@ -1445,12 +1434,61 @@ window.NICHOS_DATA = [
   var LOOP = 8, TAU = Math.PI*2;
   function wf(k){ return k*TAU/LOOP; }
 
-  function resize(){
-    DPR = Math.min(window.devicePixelRatio||1, 2);
-    W = hero.clientWidth; H = hero.clientHeight;
-    canvas.width = W*DPR; canvas.height = H*DPR;
+  // ---- Calidad adaptativa -------------------------------------------------
+  // El costo de este fondo NO es JavaScript: es relleno de píxeles (decenas de
+  // hebras translúcidas superpuestas sobre casi toda la pantalla). Medido con
+  // un profiler, ~78% de cada frame se iba en rasterizado, y el costo se
+  // multiplica por el escalado de pantalla del sistema (en un equipo con
+  // devicePixelRatio 1.5 el hero caía a ~7fps).
+  // Por eso: (1) el canvas se renderiza a una fracción de la resolución física
+  // (es arte difusa, sin texto ni bordes nítidos, así que no se nota), y
+  // (2) se mide el tiempo real de frame y se sube o baja la calidad sola, en
+  // vez de fijar un valor "a ojo" que ande bien en una máquina y se trabe en
+  // otra. Las hebras se construyen una sola vez y cada nivel dibuja las
+  // primeras N, así que cambiar de nivel no re-randomiza nada (no hay salto
+  // visual).
+  var TIERS = [
+    { scale:0.85, main:105, back:30, wide:true  },
+    { scale:0.65, main:92,  back:27, wide:true  },
+    { scale:0.52, main:78,  back:24, wide:false },
+    { scale:0.42, main:62,  back:20, wide:false },
+    { scale:0.34, main:48,  back:16, wide:false }
+  ];
+  var MAX_MAIN = 105, MAX_BACK = 30;
+  var tier = 1, nMain = TIERS[1].main, nBack = TIERS[1].back, wideGlow = TIERS[1].wide;
+
+  var ftBuf = [], ftLast = 0, lastSwitch = 0;
+  function adaptQuality(now){
+    if(ftLast){ ftBuf.push(now - ftLast); if(ftBuf.length > 50) ftBuf.shift(); }
+    ftLast = now;
+    if(ftBuf.length < 50 || now - lastSwitch < 1600) return;
+    var s = ftBuf.slice().sort(function(a,b){ return a-b; });
+    var med = s[s.length >> 1];
+    if(med > 21 && tier < TIERS.length-1){ tier++; }
+    else if(med < 13.5 && tier > 0){ tier--; }
+    else { return; }
+    lastSwitch = now; ftBuf.length = 0;
+    applyTier();
+  }
+  function applyTier(){
+    var t = TIERS[tier];
+    nMain = t.main; nBack = t.back; wideGlow = t.wide;
+    sizeCanvas();
+  }
+
+  var INK = 1;   // compensación de tinta por render sub-resolución (ver sizeCanvas)
+  function sizeCanvas(){
+    DPR = TIERS[tier].scale;
+    INK = Math.min(1/DPR, 2.2);
+    canvas.width = Math.max(1, Math.round(W*DPR));
+    canvas.height = Math.max(1, Math.round(H*DPR));
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  function resize(){
+    W = hero.clientWidth; H = hero.clientHeight;
+    sizeCanvas();
     buildField();
   }
 
@@ -1516,8 +1554,10 @@ window.NICHOS_DATA = [
     // rather than a technical wireframe. backStrands sit wider + dimmer +
     // blurred, which is what makes a second band visibly cross under the
     // main one where the curve bends.
-    mainStrands = []; for(var i=0;i<105;i++) mainStrands.push(makeStrand(1));
-    backStrands = []; for(var j=0;j<30;j++) backStrands.push(makeStrand(1.5));
+    // Se construye siempre el máximo; cada nivel de calidad dibuja las
+    // primeras nMain/nBack, así cambiar de nivel no re-randomiza el campo.
+    mainStrands = []; for(var i=0;i<MAX_MAIN;i++) mainStrands.push(makeStrand(1));
+    backStrands = []; for(var j=0;j<MAX_BACK;j++) backStrands.push(makeStrand(1.5));
 
     // motes: tiny points of light that visibly travel along the wave,
     // left -> right, each doing an exact integer number of full sweeps
@@ -1575,7 +1615,7 @@ window.NICHOS_DATA = [
 
   function strokeStrandPath(s, time, spreadMul){
     ctx.beginPath();
-    for(var x=0; x<=W; x+=6){
+    for(var x=0; x<=W; x+=12){
       var spread = ribbonSpread(x)*spreadMul;
       var jitter = Math.sin(x*0.01 + s.jPhase + time*wf(s.jK)*s.jSign) * s.jAmp;
       var y = centerY(x,time) + s.offset*spread + jitter;
@@ -1584,6 +1624,7 @@ window.NICHOS_DATA = [
   }
 
   function frame(now){
+    adaptQuality(now);
     var traw = (now-t0)/1000;
     var time = traw % LOOP;
     ctx.clearRect(0,0,W,H);
@@ -1613,7 +1654,7 @@ window.NICHOS_DATA = [
     // strokes with falling alpha reads as the same soft halo for a
     // fraction of the cost.
     ctx.beginPath();
-    for(var fx=0; fx<=W; fx+=10){
+    for(var fx=0; fx<=W; fx+=16){
       var fy = centerY(fx,time);
       if(fx===0) ctx.moveTo(fx,fy); else ctx.lineTo(fx,fy);
     }
@@ -1641,11 +1682,11 @@ window.NICHOS_DATA = [
     // trick instead of ctx.filter blur (applying a filter to 30 separate
     // stroke() calls re-runs the blur convolution 30 times a frame).
     ctx.lineCap = 'round';
-    for(var bi=0; bi<backStrands.length; bi++){
+    for(var bi=0; bi<nBack; bi++){
       var bs = backStrands[bi];
       var bclose = Math.exp(-(bs.offset*bs.offset)*0.6);
       strokeStrandPath(bs, time, 1);
-      var backAlpha = bs.weight*0.4*bclose*breathe*edgeFade(hubX);
+      var backAlpha = Math.min(1, bs.weight*0.4*bclose*breathe*edgeFade(hubX)*INK);
       ctx.strokeStyle = 'rgba(70,215,200,'+(backAlpha*0.5).toFixed(3)+')';
       ctx.lineWidth = bs.w*2.2;
       ctx.stroke();
@@ -1659,13 +1700,13 @@ window.NICHOS_DATA = [
     // glow + a travelling string of short luminous dashes — never one solid
     // outline, and never a crossing grid ----------------------------------
     ctx.lineCap = 'round';
-    for(var i=0;i<mainStrands.length;i++){
+    for(var i=0;i<nMain;i++){
       var s = mainStrands[i];
       var close = Math.exp(-(s.offset*s.offset)*0.95);
       strokeStrandPath(s, time, 1);
 
       // faint base cohesion stroke (the "fog" that holds the thread together)
-      ctx.globalAlpha = s.weight*0.16*close*breathe;
+      ctx.globalAlpha = Math.min(1, s.weight*0.16*close*breathe*INK);
       ctx.strokeStyle = 'rgba(70,225,205,'+(0.5*envelope(hubX)).toFixed(3)+')';
       ctx.shadowBlur = 0;
       ctx.setLineDash([]);
@@ -1686,12 +1727,16 @@ window.NICHOS_DATA = [
       var dashSpeed = pattern*s.dashCyc/LOOP; // exact integer cycles per LOOP
       ctx.setLineDash([s.dashLen, s.gapLen]);
       ctx.lineDashOffset = -time*dashSpeed;
-      var dashAlpha = s.weight*0.75*close*breathe;
-      ctx.strokeStyle = 'rgba(90,235,215,'+(dashAlpha*0.30).toFixed(3)+')';
-      ctx.lineWidth = s.w*2.8;
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(140,255,238,'+(dashAlpha*0.55).toFixed(3)+')';
-      ctx.lineWidth = s.w*1.6;
+      var dashAlpha = Math.min(1, s.weight*0.75*close*breathe*INK);
+      if(wideGlow){
+        ctx.strokeStyle = 'rgba(90,235,215,'+(dashAlpha*0.30).toFixed(3)+')';
+        ctx.lineWidth = s.w*2.8;
+        ctx.stroke();
+      }
+      // Sin el trazo ancho, se compensa el halo engrosando levemente el medio,
+      // para que la hebra no se vea "pelada" en los niveles de menor calidad.
+      ctx.strokeStyle = 'rgba(140,255,238,'+(dashAlpha*(wideGlow?0.55:0.70)).toFixed(3)+')';
+      ctx.lineWidth = s.w*(wideGlow?1.6:1.9);
       ctx.stroke();
       ctx.strokeStyle = 'rgba(190,255,248,'+dashAlpha.toFixed(3)+')';
       ctx.lineWidth = s.w;
@@ -1801,7 +1846,12 @@ window.NICHOS_DATA = [
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(en){
         inView = en.isIntersecting;
-        if(inView && !running && !reduce){ running = true; requestAnimationFrame(frame); }
+        if(inView && !running && !reduce){
+          // Al reanudar, el primer delta es el tiempo que estuvo pausado:
+          // hay que descartar la medición anterior o bajaría de calidad sin motivo.
+          ftLast = 0; ftBuf.length = 0;
+          running = true; requestAnimationFrame(frame);
+        }
       });
     }, {rootMargin:'150px'});
     io.observe(hero);
@@ -1882,7 +1932,10 @@ window.NICHOS_DATA = [
   }
 
   function resize(){
-    DPR = Math.min(window.devicePixelRatio||1, 2);
+    // Igual que el hero: se renderiza por debajo de la resolución física
+    // porque son hilos difusos, y así el costo no se multiplica por el
+    // escalado de pantalla del sistema.
+    DPR = Math.min(window.devicePixelRatio||1, 1) * 0.62;
     W = stage.clientWidth; H = stage.clientHeight;
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
@@ -2423,7 +2476,7 @@ window.NICHOS_DATA = [
 
   function resize(){
     var rect = canvas.getBoundingClientRect();
-    DPR = Math.min(2, window.devicePixelRatio || 1);
+    DPR = Math.min(1, window.devicePixelRatio || 1) * 0.62;  // ver nota del hero
     W = rect.width; H = rect.height;
     canvas.width = W*DPR; canvas.height = H*DPR;
     ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -2492,7 +2545,6 @@ window.I18N = {
   es: {
     'hero.available': 'Disponible',
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>ESTRATEGIA</span><span class="arrow">&rarr;</span><span>CREATIVIDAD</span><span class="arrow">&rarr;</span><span>RESULTADOS</span>',
-    'hud.note': '<span class="rule"></span>CONECTANDO DATOS, AUDIENCIAS<br>Y CREATIVIDAD.',
     'hero.headline': '<span class="line1">Menos <span class="glitch" data-text="ruido">ruido</span>.</span>Más <em>resultados</em> para tu marca.',
     'hero.lead': 'Estrategia, datos y creatividad para<br>que tu marca crezca en el mundo digital.',
     'hero.cta': 'Conocé mi trabajo <span>&rarr;</span>',
@@ -2578,7 +2630,6 @@ window.I18N = {
   en: {
     'hero.available': 'Available',
     'hud.pill': '<span class="dot"></span><span>PAID MEDIA</span><span class="arrow">&rarr;</span><span>STRATEGY</span><span class="arrow">&rarr;</span><span>CREATIVE</span><span class="arrow">&rarr;</span><span>RESULTS</span>',
-    'hud.note': '<span class="rule"></span>CONNECTING DATA, AUDIENCES<br>AND CREATIVITY.',
     'hero.headline': '<span class="line1">Less <span class="glitch" data-text="noise">noise</span>.</span>More <em>results</em> for your brand.',
     'hero.lead': 'Strategy, data and creativity for<br>your brand to grow in the digital world.',
     'hero.cta': 'See my work <span>&rarr;</span>',
