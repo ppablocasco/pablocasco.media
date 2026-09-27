@@ -504,7 +504,10 @@
     .casos-rail.is-rail .case-tags{ margin-bottom:18px; }
     .casos-rail.is-rail .case-stats{ margin-bottom:20px; }
     .casos-rail.is-rail .case-shots{ margin-top:auto; }
-    .casos-rail.is-rail .shot-thumb{ max-width:none; flex:1 1 0; max-height:clamp(104px, 19vh, 200px); }
+    /* Alto fijo (no max-height): las capturas son loading="lazy" y si el alto
+       dependiera de la imagen, al medir antes de que carguen se subestimaría
+       el alto del contenido y la red de seguridad decidiría mal. */
+    .casos-rail.is-rail .shot-thumb{ max-width:none; flex:1 1 0; height:clamp(104px, 19vh, 200px); }
     .casos-rail.is-rail .shot-thumb img{ height:100%; object-fit:cover; object-position:top left; }
 
     /* Indicador de avance: segmentos (uno por caso) + nombre del caso activo */
@@ -556,7 +559,7 @@
       .casos-rail.is-rail .case-stats{ padding-top:12px; margin-bottom:12px; }
       .casos-rail.is-rail .case-header{ padding:16px 24px 10px; }
       .casos-rail.is-rail .case-body{ padding:0 24px 16px; }
-      .casos-rail.is-rail .shot-thumb{ max-height:clamp(88px, 16vh, 150px); }
+      .casos-rail.is-rail .shot-thumb{ height:clamp(88px, 16vh, 150px); }
     }
   }
   }
@@ -2235,6 +2238,12 @@ window.NICHOS_DATA = [
   window.addEventListener('load', onResize);
   // El toggle ESP/ENG cambia el largo de los textos -> re-medir.
   document.addEventListener('langchange', onResize);
+  // Las capturas son loading="lazy": cuando cargan puede cambiar el alto.
+  Array.prototype.forEach.call(rail.querySelectorAll('img'), function(img){
+    if(img.complete) return;
+    img.addEventListener('load', onResize, {once:true});
+    img.addEventListener('error', onResize, {once:true});
+  });
 
   measure();
 })();
