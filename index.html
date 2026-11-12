@@ -874,11 +874,19 @@
   @media (max-width:1200px){ .contacto-annot{ display:none; } }
 
   .contacto-grid{
-    max-width:1864px; margin:60px auto 0; padding:0 40px;
-    display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;
+    max-width:1413px; margin:60px auto 0; padding:0 40px;
+    display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:20px;
   }
-  @media (max-width:900px){ .contacto-grid{ grid-template-columns:1fr 1fr; } }
-  @media (max-width:520px){ .contacto-grid{ grid-template-columns:1fr; } }
+  @media (max-width:900px){
+    .contacto-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); }
+    .contacto-grid > .contact-card{ grid-column:span 2; }
+    .contacto-grid > .contact-card:last-child{ grid-column:2 / span 2; }
+  }
+  @media (max-width:520px){
+    .contacto-grid{ grid-template-columns:minmax(0, 1fr); }
+    .contacto-grid > .contact-card,
+    .contacto-grid > .contact-card:last-child{ grid-column:auto; }
+  }
 
   .contact-card{
     display:block; text-decoration:none; color:inherit;
@@ -1398,17 +1406,6 @@
         <div class="contact-card-cta" data-i18n="contact.linkedinCta">Conectemos en LinkedIn</div>
       </a>
 
-      <a class="contact-card" href="https://www.instagram.com/pablocasco.ads/" target="_blank" rel="noopener">
-        <div class="contact-card-top">
-          <span class="contact-card-label">Instagram</span>
-          <span class="contact-card-arrow">&#8599;</span>
-        </div>
-        <div class="contact-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><circle cx="17.15" cy="6.85" r="1.1" fill="currentColor"/></svg>
-        </div>
-        <div class="contact-card-value">@pablocasco.ads</div>
-        <div class="contact-card-cta" data-i18n="contact.instagramCta">Seguime en Instagram</div>
-      </a>
     </div>
 
     <div class="contacto-foot">
